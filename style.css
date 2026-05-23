@@ -12,6 +12,6 @@
     height: auto;
     background-color: bisque;
 }
-.lista{
-
+ol, ul {
+    list-style-position: inside; 
 }
