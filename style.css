@@ -1,0 +1,17 @@
+/* reset */
+*{
+    padding: 0;
+    margin: 0;
+}
+
+.titulo{
+    text-transform: uppercase;
+}
+.title{
+    width: 100hw;
+    height: auto;
+    background-color: bisque;
+}
+.lista{
+
+}
