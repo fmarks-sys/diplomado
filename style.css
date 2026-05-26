@@ -4,6 +4,11 @@
     margin: 0;
 }
 
+.modo-oscuro{
+    background-color: #121212;
+    color: #B0B0B0;
+}
+
 .titulo{
     text-transform: uppercase;
 }
@@ -11,6 +16,13 @@
     width: 100hw;
     height: auto;
     background-color: bisque;
+
+    display: flex;
+    justify-content: space-between;
+}
+.darktitle{
+    background-color: #292929;
+    color: #bb86fc;
 }
 ol, ul {
     list-style-position: inside; 
