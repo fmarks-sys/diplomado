@@ -1,0 +1,30 @@
+.footer {
+  height: 50px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* contenido interno */
+.footer-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* separador */
+.separator {
+  color: var(--border-color);
+}
+
+/* versión */
+.version {
+  font-weight: 600;
+  color: var(--uajms-blue-light);
+}

@@ -1,0 +1,91 @@
+/* =============================================================================
+   ARCHIVO: src/index.css
+   DISEÑO: Paleta Institucional UAJMS - Biblioteca Informática (Plan 2018)
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* --- PALETA INSTITUCIONAL UAJMS --- */
+  --uajms-blue-primary: #0F2C59;    /* Azul Marino Principal UAJMS */
+  --uajms-blue-dark: #081A36;       /* Azul Oscuro (Navbar / Encabezados) */
+  --uajms-blue-light: #1A4480;      /* Azul Secundario (Botones / Enlaces) */
+  --uajms-gold: #DAC0A3;            /* Dorado Institucional (Bordes / Detalles) */
+  --uajms-gold-accent: #BFA58A;     /* Dorado Oscuro (Estados activos) */
+
+  /* --- COLORES SEMÁNTICOS (SISTEMA DE BIBLIOTECA) --- */
+  --bg-main: #F8FAFC;               /* Fondo gris ultra-claro para la web */
+  --bg-card: #FFFFFF;               /* Fondo blanco para cajas, tablas y paneles */
+  
+  --text-main: #1E293B;             /* Texto principal (Gris muy oscuro) */
+  --text-muted: #64748B;            /* Texto secundario (Subtítulos, fechas) */
+  --text-white: #FFFFFF;            /* Texto sobre fondos oscuros */
+
+  /* --- ESTADOS DE DISPONIBILIDAD (TESIS / PRÉSTAMOS) --- */
+  --status-available-bg: #DCFCE7;   /* Verde claro para recursos 'Disponibles' */
+  --status-available-text: #15803D;
+  --status-borrowed-bg: #FEF9C3;    /* Amarillo claro para recursos 'Prestados' */
+  --status-borrowed-text: #A16207;
+  --status-penalty-bg: #FEE2E2;     /* Rojo claro para alumnos 'Sancionados' / 'Morosos' */
+  --status-penalty-text: #B91C1C;
+
+  /* --- BORDES Y SOMBRAS ACCESIBLES --- */
+  --border-color: #E2E8F0;          /* Líneas divisorias del sistema */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+
+  /* --- FUENTES --- */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* =============================================================================
+   RESETS Y ESTILOS BASE DE LA APLICACIÓN
+   ============================================================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--uajms-blue-light);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+/* Evita que los componentes queden pegados a los bordes */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="dark"] {
+  --bg-main: #0B1120;
+  --bg-card: #1E293B;
+  --text-main: #F1F5F9;
+  --text-muted: #94A3B8;
+
+  --uajms-blue-primary: #081A36;
+  --uajms-blue-dark: #020617;
+}

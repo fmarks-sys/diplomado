@@ -1,0 +1,24 @@
+.area-form {
+  display: flex;
+  gap: 10px;
+}
+
+.area-form input {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.area-form button {
+  background: var(--uajms-blue-primary);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.area-form button:hover {
+  background: var(--uajms-blue-light);
+}

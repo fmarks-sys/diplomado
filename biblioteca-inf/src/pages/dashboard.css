@@ -1,0 +1,97 @@
+.dashboard-home {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* TITULO */
+.title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border-left: 5px solid var(--uajms-blue-primary);
+
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card h3 {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.value {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.info {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* CARD WARNING */
+.card.warning {
+  border-left: 5px solid #dc2626;
+}
+
+/* TABLA */
+.table-section {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ESTADOS */
+.status {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status.activo {
+  background: var(--status-available-bg);
+  color: var(--status-available-text);
+}
+
+.status.vencido {
+  background: var(--status-penalty-bg);
+  color: var(--status-penalty-text);
+}

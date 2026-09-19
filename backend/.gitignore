@@ -1,0 +1,26 @@
+# Dependencias (NUNCA subir esto)
+node_modules/
+
+# Variables de entorno y credenciales (CRÍTICO)
+.env
+.env.local
+.env.*.local
+
+# Logs de Node y gestores de paquetes
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Builds y compilados (si usas TypeScript o algún bundler)
+dist/
+build/
+
+# Entornos de desarrollo locales
+.vscode/
+.idea/
+*.suo
+
+# Ignorar archivo de conexión por credenciales hardcodeadas
+db.js

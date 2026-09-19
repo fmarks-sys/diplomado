@@ -1,0 +1,163 @@
+/* CONTENEDOR PRINCIPAL */
+.areas-container {
+background: var(--bg-card);
+border: 1px solid var(--border-color);
+border-radius: var(--radius-md);
+padding: 20px;
+}
+
+/* TITULO */
+.areas-container h2 {
+font-size: 22px;
+font-weight: 600;
+margin-bottom: 15px;
+}
+
+/*  FORM  */
+.areas-container form {
+display: flex;
+gap: 10px;
+margin-bottom: 20px;
+}
+
+.areas-container input {
+flex: 1;
+padding: 8px;
+border: 1px solid var(--border-color);
+border-radius: var(--radius-sm);
+}
+
+.areas-container button {
+padding: 8px 14px;
+border: none;
+border-radius: var(--radius-sm);
+cursor: pointer;
+/* background: #2563eb; */
+color: white;
+}
+
+.areas-container button:hover {
+opacity: 0.9;
+}
+
+/*  TABLA  */
+.table {
+width: 100%;
+border-collapse: collapse;
+}
+
+.table th,
+.table td {
+border-bottom: 1px solid var(--border-color);
+padding: 10px;
+text-align: left;
+}
+
+.table th {
+background: rgba(0, 0, 0, 0.05);
+}
+
+/* BOTONES DE ACCIONES */
+.table td button {
+margin-right: 8px;
+padding: 6px 10px;
+border-radius: var(--radius-sm);
+border: none;
+cursor: pointer;
+}
+
+/* BOTÓN ELIMINAR */
+.table td button:first-child {
+background: #dc2626;
+color: white;
+}
+
+/* BOTÓN ESTADO */
+.table td button:last-child {
+background: #f59e0b;
+color: white;
+}
+
+.table input {
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+/*  MODAL  */
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.4);
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+z-index: 1000;
+}
+
+.modal-box {
+background: var(--bg-card);
+padding: 20px;
+border-radius: var(--radius-md);
+width: 300px;
+box-shadow: var(--shadow-md);
+}
+
+.modal-actions {
+display: flex;
+justify-content: flex-end;
+gap: 10px;
+margin-top: 15px;
+}
+
+.modal-actions button {
+padding: 6px 12px;
+border-radius: var(--radius-sm);
+border: none;
+cursor: pointer;
+}
+
+.modal-actions .danger {
+background: #dc2626;
+color: white;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge svg {
+  font-size: 16px; /*  controla tamaño del icono */
+}
+
+/* ACTIVO */
+.badge.activo {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* INACTIVO */
+.badge.inactivo {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-page {
+  background: var(--uajms-gold);
+  border: none;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+}

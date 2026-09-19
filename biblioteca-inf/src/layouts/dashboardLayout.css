@@ -1,0 +1,36 @@
+.dashboard {
+  display: flex;
+  min-height: 100vh; /* mejor que height */
+}
+
+/* SIDEBAR */
+.dashboard > .sidebar {
+  width: 240px;
+  background: var(--uajms-blue-dark);
+  color: var(--text-white);
+}
+
+/* MAIN AREA */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-main);
+}
+
+/* NAVBAR */
+.main > .navbar {
+  flex-shrink: 0;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto; /* 🔥 scroll interno */
+}
+
+/* FOOTER */
+.main > .footer {
+  flex-shrink: 0;
+}

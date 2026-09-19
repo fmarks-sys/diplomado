@@ -1,0 +1,4 @@
+# .gitignore en la raíz general (Opcional)
+.vscode/
+.DS_Store
+Thumbs.db
