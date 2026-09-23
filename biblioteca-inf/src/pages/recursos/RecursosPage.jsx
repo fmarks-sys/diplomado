@@ -3,7 +3,7 @@ import {
     getRecursos,
     createRecurso,
     deleteRecurso,
-    toggleEstadoRecurso,
+    cambiarEstadoRecurso,
     updateRecurso
 } from '../../services/recursosService';
 import { getAreas } from '../../services/areasService';
@@ -45,6 +45,7 @@ const RecursosPage = () => {
     const [form, setForm] = useState(initialFormState);
     const [modal, setModal] = useState({ open: false, message: '', type: 'success' });
     const [confirmModal, setConfirmModal] = useState({ open: false, id: null, action: null });
+    const [estadoModal, setEstadoModal] = useState({ open: false, id: null, estado: 'DISPONIBLE' });
     const [editModal, setEditModal] = useState({ open: false, data: null });
 
     const showModal = (message, type = 'success') => setModal({ open: true, message, type });
@@ -185,7 +186,11 @@ const RecursosPage = () => {
                 ...editModal.data,
                 tribunal_jurado: tribunalesLimpios,
                 anio_publicacion: Number(editModal.data.anio_publicacion),
-                area_id: Number(editModal.data.area_id)
+                area_id: editModal.data.area_id ? Number(editModal.data.area_id) : null,
+                cantidad_total: editModal.data.tipo_recurso === 'TESIS' ? 1 : Number(editModal.data.cantidad_total),
+                palabras_clave: typeof editModal.data.palabras_clave === 'string'
+                    ? editModal.data.palabras_clave.split(',').map(p => p.trim()).filter(Boolean)
+                    : (editModal.data.palabras_clave || [])
             });
 
             await loadData();
@@ -203,7 +208,12 @@ const RecursosPage = () => {
 
         setEditModal({
             open: true,
-            data: { ...recurso, tribunal_jurado: jurado }
+            data: {
+                ...recurso,
+                tribunal_jurado: jurado,
+                palabras_clave: Array.isArray(recurso.palabras_clave) ? recurso.palabras_clave.join(', ') : '',
+                cantidad_total: recurso.tipo_recurso === 'TESIS' ? 1 : recurso.cantidad_total
+            }
         });
     };
 
@@ -254,7 +264,7 @@ const RecursosPage = () => {
                                     <button className="btn-delete" onClick={() => setConfirmModal({ open: true, id: r.id, action: 'delete' })}>
                                         Eliminar
                                     </button>
-                                    <button className="btn-toggle" onClick={() => setConfirmModal({ open: true, id: r.id, action: 'estado' })}>
+                                    <button className="btn-toggle" onClick={() => setEstadoModal({ open: true, id: r.id, estado: r.estado })}>
                                         Estado
                                     </button>
                                     <button onClick={() => openEdit(r)}>
@@ -445,6 +455,19 @@ const RecursosPage = () => {
                     <div className="modal-box">
                         <h3>Editar {editModal.data.tipo_recurso}</h3>
                         <div className="form-grid" style={{ gap: '10px', textAlign: 'left', marginTop: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div>
+                                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Código Topográfico:</label>
+                                    <input name="codigo_topografico" value={editModal.data.codigo_topografico || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Tipo:</label>
+                                    <select name="tipo_recurso" value={editModal.data.tipo_recurso} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }}>
+                                        <option value="LIBRO">Libro</option>
+                                        <option value="TESIS">Tesis</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div>
                                 <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Título:</label>
                                 <input name="titulo" value={editModal.data.titulo || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
@@ -482,6 +505,16 @@ const RecursosPage = () => {
                                             <input name="editorial" value={editModal.data.editorial || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
                                         </div>
                                     </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        <div>
+                                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Edición:</label>
+                                            <input name="edicion" value={editModal.data.edicion || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Cantidad Total:</label>
+                                            <input name="cantidad_total" type="number" min="1" value={editModal.data.cantidad_total || 1} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
+                                        </div>
+                                    </div>
                                 </>
                             )}
 
@@ -507,8 +540,25 @@ const RecursosPage = () => {
                                         <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Gestión Defensa:</label>
                                         <input name="gestion_defensa" value={editModal.data.gestion_defensa || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
                                     </div>
+                                    <div>
+                                        <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Soporte:</label>
+                                        <select name="soporte_fisico" value={editModal.data.soporte_fisico || 'EMPASTADO'} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }}>
+                                            <option value="EMPASTADO">Empastado</option>
+                                            <option value="CD">CD</option>
+                                            <option value="DIGITAL">Digital</option>
+                                            <option value="AMBOS">Ambos</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '12px', fontWeight: 'bold' }}>URL Documento PDF:</label>
+                                        <input name="url_documento_pdf" value={editModal.data.url_documento_pdf || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
+                                    </div>
                                 </>
                             )}
+                            <div>
+                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Palabras Clave (separadas por coma):</label>
+                                <input name="palabras_clave" value={editModal.data.palabras_clave || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
+                            </div>
                         </div>
 
                         <div className="modal-actions" style={{ marginTop: '15px' }}>
@@ -537,18 +587,12 @@ const RecursosPage = () => {
                 <div className="modal-overlay">
                     <div className="modal-box warning">
                         <p>
-                            {confirmModal.action === 'delete'
-                                ? '¿Seguro que deseas eliminar este recurso?'
-                                : '¿Cambiar estado del recurso?'}
+                            ¿Seguro que deseas eliminar físicamente este recurso? Esta acción es administrativa y no se puede deshacer.
                         </p>
                         <div className="modal-actions">
                             <button onClick={async () => {
                                 try {
-                                    if (confirmModal.action === 'delete') {
-                                        await deleteRecurso(confirmModal.id);
-                                    } else {
-                                        await toggleEstadoRecurso(confirmModal.id);
-                                    }
+                                    await deleteRecurso(confirmModal.id);
                                     loadData();
                                     showModal('Operación realizada correctamente');
                                 } catch (err) {
@@ -559,6 +603,42 @@ const RecursosPage = () => {
                                 Sí
                             </button>
                             <button className="btn-cancel" onClick={() => setConfirmModal({ open: false, id: null, action: null })}>
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {estadoModal.open && (
+                <div className="modal-overlay">
+                    <div className="modal-box warning">
+                        <h3>Cambiar estado del recurso</h3>
+                        <p>Selecciona el nuevo estado según la BD v3.</p>
+                        <select
+                            value={estadoModal.estado}
+                            onChange={(e) => setEstadoModal(prev => ({ ...prev, estado: e.target.value }))}
+                            style={{ width: '100%', padding: '8px', marginBottom: '15px' }}
+                        >
+                            <option value="DISPONIBLE">Disponible</option>
+                            <option value="MANTENIMIENTO">Mantenimiento</option>
+                            <option value="BAJA">Baja</option>
+                        </select>
+                        <div className="modal-actions">
+                            <button onClick={async () => {
+                                try {
+                                    await cambiarEstadoRecurso(estadoModal.id, estadoModal.estado);
+                                    await loadData();
+                                    showModal('Estado actualizado correctamente');
+                                    setEstadoModal({ open: false, id: null, estado: 'DISPONIBLE' });
+                                } catch (err) {
+                                    showModal(err.message, 'error');
+                                }
+                            }}>
+                                Guardar Estado
+                            </button>
+                            <button className="btn-cancel" onClick={() => setEstadoModal({ open: false, id: null, estado: 'DISPONIBLE' })}>
                                 Cancelar
                             </button>
                         </div>

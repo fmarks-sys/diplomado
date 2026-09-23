@@ -1,84 +1,92 @@
 import { pool } from '../../config/db.js';
 
-// Función auxiliar para sincronizar Palabras Clave (N:M) dentro de la transacción
-const syncPalabrasClave = async (client, recursoId, palabras) => {
-    if (!Array.isArray(palabras) || palabras.length === 0) return;
+// Sincroniza palabras clave N:M dentro de una transacción.
+const syncPalabrasClave = async (client, recursoId, palabras = []) => {
+    if (!Array.isArray(palabras)) return;
 
     for (const palabra of palabras) {
-        
-        // const palabraLimpia = palabra.trim();
-        
-        // Por (convertir siempre a minúsculas o capitalizar igual):
-        const palabraLimpia = palabra.trim().toLowerCase();
+        const palabraLimpia = String(palabra).trim().toUpperCase();
         if (!palabraLimpia) continue;
 
-        // 1. Insertar la palabra en 'palabras_clave' si no existe
-        await client.query(
+        const result = await client.query(
             `INSERT INTO palabras_clave (palabra)
              VALUES ($1)
-             ON CONFLICT (palabra) DO NOTHING`,
+             ON CONFLICT (palabra) DO UPDATE SET palabra = EXCLUDED.palabra
+             RETURNING id`,
             [palabraLimpia]
         );
 
-        // 2. Obtener el ID de la palabra
-        const resPalabra = await client.query(
-            `SELECT id FROM palabras_clave WHERE palabra = $1`,
-            [palabraLimpia]
-        );
-        const palabraId = resPalabra.rows[0]?.id;
+        const palabraId = result.rows[0].id;
 
-        if (palabraId) {
-            // 3. Crear la relación en 'recurso_palabras'
-            await client.query(
-                `INSERT INTO recurso_palabras (recurso_id, palabra_id)
-                 VALUES ($1, $2)
-                 ON CONFLICT (recurso_id, palabra_id) DO NOTHING`,
-                [recursoId, palabraId]
-            );
-        }
+        await client.query(
+            `INSERT INTO recurso_palabras (recurso_id, palabra_id)
+             VALUES ($1, $2)
+             ON CONFLICT (recurso_id, palabra_id) DO NOTHING`,
+            [recursoId, palabraId]
+        );
     }
 };
 
-//  LISTAR (Incluye detalles de Libros, Tesis y Palabras Clave)
+const SELECT_RECURSO_COMPLETO = `
+    SELECT
+        r.*,
+        a.nombre AS area_nombre,
+        l.isbn,
+        l.autor,
+        l.editorial,
+        l.edicion,
+        t.autor_postulante,
+        t.tutor_guia,
+        t.tribunal_jurado,
+        t.gestion_defensa,
+        t.soporte_fisico,
+        t.url_documento_pdf,
+        COALESCE(
+            ARRAY_REMOVE(ARRAY_AGG(DISTINCT pc.palabra), NULL),
+            '{}'::varchar[]
+        ) AS palabras_clave
+    FROM recursos r
+    LEFT JOIN areas_menciones a ON r.area_id = a.id
+    LEFT JOIN libros_detalles l ON r.id = l.recurso_id
+    LEFT JOIN tesis_detalles t ON r.id = t.recurso_id
+    LEFT JOIN recurso_palabras rp ON r.id = rp.recurso_id
+    LEFT JOIN palabras_clave pc ON rp.palabra_id = pc.id
+`;
+
+// LISTAR
 export const getAllRecursos = async () => {
     const result = await pool.query(`
-        SELECT 
-            r.*,
-            a.nombre AS area_nombre,
-            -- Detalles del Libro
-            l.isbn, l.autor, l.editorial, l.edicion,
-            -- Detalles de la Tesis
-            t.autor_postulante, t.tutor_guia, t.tribunal_jurado, 
-            t.gestion_defensa, t.soporte_fisico, t.url_documento_pdf,
-            -- Agrupamiento de Palabras Clave como Array nativo de Postgres
-            COALESCE(
-                ARRAY_REMOVE(ARRAY_AGG(pc.palabra), NULL), 
-                '{}'
-            ) AS palabras_clave
-        FROM recursos r
-        LEFT JOIN areas_menciones a ON r.area_id = a.id
-        LEFT JOIN libros_detalles l ON r.id = l.recurso_id
-        LEFT JOIN tesis_detalles t ON r.id = t.recurso_id
-        LEFT JOIN recurso_palabras rp ON r.id = rp.recurso_id
-        LEFT JOIN palabras_clave pc ON rp.palabra_id = pc.id
+        ${SELECT_RECURSO_COMPLETO}
         GROUP BY r.id, a.nombre, l.recurso_id, t.recurso_id
         ORDER BY r.id DESC
     `);
     return result.rows;
 };
 
+// OBTENER POR ID
+export const getRecursoById = async (id) => {
+    const result = await pool.query(`
+        ${SELECT_RECURSO_COMPLETO}
+        WHERE r.id = $1
+        GROUP BY r.id, a.nombre, l.recurso_id, t.recurso_id
+    `, [id]);
+
+    return result.rows[0] || null;
+};
+
 // CREAR
 export const createRecurso = async (data) => {
     const client = await pool.connect();
+
     try {
         await client.query('BEGIN');
 
-        // 1. Inserción en la tabla base 'recursos'
         const result = await client.query(
-            `INSERT INTO recursos 
-            (codigo_topografico, titulo, anio_publicacion, area_id, tipo_recurso, cantidad_total, cantidad_disponible)
-            VALUES ($1, $2, $3, $4, $5, $6, $6)
-            RETURNING *`,
+            `INSERT INTO recursos
+                (codigo_topografico, titulo, anio_publicacion, area_id,
+                 tipo_recurso, cantidad_total, cantidad_disponible)
+             VALUES ($1, $2, $3, $4, $5, $6, $6)
+             RETURNING *`,
             [
                 data.codigo_topografico,
                 data.titulo,
@@ -91,10 +99,10 @@ export const createRecurso = async (data) => {
 
         const nuevoRecurso = result.rows[0];
 
-        // 2. Inserción en la tabla hija según el tipo
         if (data.tipo_recurso === 'LIBRO') {
             await client.query(
-                `INSERT INTO libros_detalles (recurso_id, isbn, autor, editorial, edicion)
+                `INSERT INTO libros_detalles
+                    (recurso_id, isbn, autor, editorial, edicion)
                  VALUES ($1, $2, $3, $4, $5)`,
                 [
                     nuevoRecurso.id,
@@ -106,8 +114,9 @@ export const createRecurso = async (data) => {
             );
         } else if (data.tipo_recurso === 'TESIS') {
             await client.query(
-                `INSERT INTO tesis_detalles 
-                (recurso_id, autor_postulante, tutor_guia, tribunal_jurado, gestion_defensa, soporte_fisico, url_documento_pdf)
+                `INSERT INTO tesis_detalles
+                    (recurso_id, autor_postulante, tutor_guia, tribunal_jurado,
+                     gestion_defensa, soporte_fisico, url_documento_pdf)
                  VALUES ($1, $2, $3, $4, $5, $6, $7)`,
                 [
                     nuevoRecurso.id,
@@ -121,13 +130,12 @@ export const createRecurso = async (data) => {
             );
         }
 
-        // 3. Procesar y guardar Palabras Clave
-        if (data.palabras_clave) {
+        if (data.palabras_clave !== undefined) {
             await syncPalabrasClave(client, nuevoRecurso.id, data.palabras_clave);
         }
 
         await client.query('COMMIT');
-        return nuevoRecurso;
+        return await getRecursoById(nuevoRecurso.id);
     } catch (error) {
         await client.query('ROLLBACK');
         throw error;
@@ -139,23 +147,65 @@ export const createRecurso = async (data) => {
 // ACTUALIZAR
 export const updateRecurso = async (id, data) => {
     const client = await pool.connect();
+
     try {
         await client.query('BEGIN');
 
-        // 1. Actualizar tabla base
-        const result = await client.query(
-            `UPDATE recursos
-             SET titulo = $1,
-                 anio_publicacion = $2,
-                 area_id = $3,
-                 tipo_recurso = $4
-             WHERE id = $5
-             RETURNING *`,
-            [data.titulo, data.anio_publicacion, data.area_id, data.tipo_recurso, id]
+        const actualResult = await client.query(
+            `SELECT id, tipo_recurso, cantidad_total, cantidad_disponible
+             FROM recursos
+             WHERE id = $1
+             FOR UPDATE`,
+            [id]
         );
 
-        // 2. Actualizar o Insertar (Upsert) en tabla hija según el tipo
+        if (actualResult.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return null;
+        }
+
+        const actual = actualResult.rows[0];
+        let cantidadTotal = data.tipo_recurso === 'TESIS' ? 1 : data.cantidad_total;
+        let cantidadDisponible;
+
+        // Conserva la cantidad actualmente prestada al modificar el total.
+        const cantidadPrestada = actual.cantidad_total - actual.cantidad_disponible;
+        if (data.tipo_recurso === 'TESIS') {
+            cantidadDisponible = cantidadPrestada > 0 ? 0 : 1;
+        } else {
+            if (cantidadTotal < cantidadPrestada) {
+                throw new Error(`No se puede reducir cantidad_total a ${cantidadTotal}; existen ${cantidadPrestada} ejemplar(es) no disponibles`);
+            }
+            cantidadDisponible = cantidadTotal - cantidadPrestada;
+        }
+
+        const result = await client.query(
+            `UPDATE recursos
+             SET codigo_topografico = $1,
+                 titulo = $2,
+                 anio_publicacion = $3,
+                 area_id = $4,
+                 tipo_recurso = $5,
+                 cantidad_total = $6,
+                 cantidad_disponible = $7
+             WHERE id = $8
+             RETURNING *`,
+            [
+                data.codigo_topografico,
+                data.titulo,
+                data.anio_publicacion,
+                data.area_id,
+                data.tipo_recurso,
+                cantidadTotal,
+                cantidadDisponible,
+                id
+            ]
+        );
+
+        // Mantener un solo subtipo por recurso.
         if (data.tipo_recurso === 'LIBRO') {
+            await client.query('DELETE FROM tesis_detalles WHERE recurso_id = $1', [id]);
+
             await client.query(
                 `INSERT INTO libros_detalles (recurso_id, isbn, autor, editorial, edicion)
                  VALUES ($1, $2, $3, $4, $5)
@@ -166,10 +216,13 @@ export const updateRecurso = async (id, data) => {
                     edicion = EXCLUDED.edicion`,
                 [id, data.isbn || null, data.autor, data.editorial || null, data.edicion || null]
             );
-        } else if (data.tipo_recurso === 'TESIS') {
+        } else {
+            await client.query('DELETE FROM libros_detalles WHERE recurso_id = $1', [id]);
+
             await client.query(
-                `INSERT INTO tesis_detalles 
-                (recurso_id, autor_postulante, tutor_guia, tribunal_jurado, gestion_defensa, soporte_fisico, url_documento_pdf)
+                `INSERT INTO tesis_detalles
+                    (recurso_id, autor_postulante, tutor_guia, tribunal_jurado,
+                     gestion_defensa, soporte_fisico, url_documento_pdf)
                  VALUES ($1, $2, $3, $4, $5, $6, $7)
                  ON CONFLICT (recurso_id) DO UPDATE SET
                     autor_postulante = EXCLUDED.autor_postulante,
@@ -190,14 +243,13 @@ export const updateRecurso = async (id, data) => {
             );
         }
 
-        // 3. Sincronizar Palabras Clave (se limpian relaciones viejas y se insertan las nuevas)
-        if (data.palabras_clave) {
-            await client.query(`DELETE FROM recurso_palabras WHERE recurso_id = $1`, [id]);
+        if (data.palabras_clave !== undefined) {
+            await client.query('DELETE FROM recurso_palabras WHERE recurso_id = $1', [id]);
             await syncPalabrasClave(client, id, data.palabras_clave);
         }
 
         await client.query('COMMIT');
-        return result.rows[0];
+        return await getRecursoById(result.rows[0].id);
     } catch (error) {
         await client.query('ROLLBACK');
         throw error;
@@ -206,22 +258,27 @@ export const updateRecurso = async (id, data) => {
     }
 };
 
-// ELIMINACIÓN FÍSICA
-export const deleteRecurso = async (id) => {
-    await pool.query('DELETE FROM recursos WHERE id = $1', [id]);
-};
-
-// ELIMINACIÓN LÓGICA
-export const disableRecurso = async (id) => {
+// CAMBIAR ESTADO
+export const updateEstadoRecurso = async (id, estado) => {
     const result = await pool.query(
         `UPDATE recursos
-         SET estado = CASE
-             WHEN estado = 'DISPONIBLE' THEN 'BAJA'
-             ELSE 'DISPONIBLE'
-         END
+         SET estado = $1
+         WHERE id = $2
+         RETURNING *`,
+        [estado, id]
+    );
+
+    return result.rows[0] || null;
+};
+
+// ELIMINACIÓN FÍSICA
+export const deleteRecurso = async (id) => {
+    const result = await pool.query(
+        `DELETE FROM recursos
          WHERE id = $1
          RETURNING *`,
         [id]
     );
-    return result.rows[0];
+
+    return result.rows[0] || null;
 };
