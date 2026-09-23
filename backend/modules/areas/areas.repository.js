@@ -1,55 +1,87 @@
 import { pool } from '../../config/db.js';
 
-//listar todas Areas
+// ======================================================
+// LISTAR TODAS LAS ÁREAS
+// Uso: módulo administrativo
+// ======================================================
 export const getAllAreas = async () => {
     const result = await pool.query(
-        'SELECT * FROM areas_menciones ORDER BY id DESC'
-    );
-    return result.rows;
-};
-
-// LISTAR (solo activos)
-export const getAllAreasEstado = async () => {
-    const result = await pool.query(
-        `SELECT * FROM areas_menciones 
-         WHERE estado = 'ACTIVO'
+        `SELECT id, nombre, estado
+         FROM areas_menciones
          ORDER BY id DESC`
     );
+
     return result.rows;
 };
 
-//crear area
-export const createAreas = async (nombre) => {
+
+// ======================================================
+// LISTAR SOLO ÁREAS ACTIVAS
+// Uso: selects de libros, tesis y recursos
+// ======================================================
+export const getAllAreasActivas = async () => {
     const result = await pool.query(
-        'INSERT INTO areas_menciones (nombre) VALUES ($1) RETURNING *',
-        [nombre]
+        `SELECT id, nombre, estado
+         FROM areas_menciones
+         WHERE estado = 'ACTIVO'
+         ORDER BY nombre ASC`
     );
-    return result.rows[0];
+
+    return result.rows;
 };
 
-//modificaer area
-// ACTUALIZAR
-export const updateArea = async (id, nombre) => {
-    const result = await pool.query(
-        `UPDATE areas_menciones 
-         SET nombre = $1 
-         WHERE id = $2 
-         RETURNING *`,
-        [nombre, id]
-    );
-    return result.rows[0];
-};
 
-//eliminar forma fisica
-export const deletAreas = async (id) => {
+// ======================================================
+// BUSCAR ÁREA POR ID
+// ======================================================
+export const getAreaById = async (id) => {
     const result = await pool.query(
-        'DELETE FROM areas_menciones WHERE id = $1',
+        `SELECT id, nombre, estado
+         FROM areas_menciones
+         WHERE id = $1`,
         [id]
     );
+
+    return result.rows[0];
 };
 
-//eliminacion logica
-export const disableArea = async (id) => {
+
+// ======================================================
+// CREAR ÁREA
+// ======================================================
+export const createArea = async (nombre) => {
+    const result = await pool.query(
+        `INSERT INTO areas_menciones (nombre)
+         VALUES ($1)
+         RETURNING id, nombre, estado`,
+        [nombre]
+    );
+
+    return result.rows[0];
+};
+
+
+// ======================================================
+// ACTUALIZAR ÁREA
+// ======================================================
+export const updateArea = async (id, nombre) => {
+    const result = await pool.query(
+        `UPDATE areas_menciones
+         SET nombre = $1
+         WHERE id = $2
+         RETURNING id, nombre, estado`,
+        [nombre, id]
+    );
+
+    return result.rows[0];
+};
+
+
+// ======================================================
+// CAMBIAR ESTADO
+// ACTIVO <-> INACTIVO
+// ======================================================
+export const toggleAreaEstado = async (id) => {
     const result = await pool.query(
         `UPDATE areas_menciones
          SET estado = CASE
@@ -57,8 +89,10 @@ export const disableArea = async (id) => {
              ELSE 'ACTIVO'
          END
          WHERE id = $1
-         RETURNING *`,
+         RETURNING id, nombre, estado`,
         [id]
     );
+
     return result.rows[0];
 };
+

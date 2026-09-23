@@ -1,255 +1,739 @@
 import { useEffect, useState } from 'react';
+
 import {
     getAreas,
     createArea,
-    deleteArea,
-    estadoDelArea,
+    cambiarEstadoArea,
     modArea
 } from '../../services/areasService';
 
 import './areas.css';
+
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 
+
+// ======================================================
+// COMPONENTE
+// ======================================================
 const AreasPage = () => {
+
     const [areas, setAreas] = useState([]);
     const [nombre, setNombre] = useState('');
 
-    // 1. ESTADOS DE PAGINACIÓN
+    // Mensajes
+    const [mensaje, setMensaje] = useState('');
+    const [error, setError] = useState('');
+
+    // Loading
+    const [loading, setLoading] = useState(false);
+
+    // ==================================================
+    // PAGINACIÓN
+    // ==================================================
+
     const [currentPage, setCurrentPage] = useState(1);
+
     const itemsPerPage = 5;
 
-    // Modales y Edición
+
+    // ==================================================
+    // MODAL CAMBIO DE ESTADO
+    // ==================================================
+
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState(null);
-    const [actionType, setActionType] = useState(null);
+
+    const [selectedArea, setSelectedArea] = useState(null);
+
+
+    // ==================================================
+    // EDICIÓN
+    // ==================================================
 
     const [editId, setEditId] = useState(null);
+
     const [editNombre, setEditNombre] = useState('');
 
-    // LOAD
+
+    // ==================================================
+    // CARGAR ÁREAS
+    // ==================================================
+
     const loadAreas = async () => {
+
         try {
+
+            setLoading(true);
+            setError('');
+
             const data = await getAreas();
+
             setAreas(data);
+
         } catch (err) {
-            console.error(err.message);
+
+            console.error(err);
+
+            setError(
+                err.message || 'Error al cargar las áreas'
+            );
+
+        } finally {
+
+            setLoading(false);
         }
     };
+
 
     useEffect(() => {
         loadAreas();
     }, []);
 
-    // 2. CÁLCULOS DE PAGINACIÓN
-    const totalPages = Math.ceil(areas.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentAreas = areas.slice(indexOfFirstItem, indexOfLastItem);
 
-    // Ajuste de página si borras el último elemento de la página final
+    // ==================================================
+    // PAGINACIÓN
+    // ==================================================
+
+    const totalPages = Math.ceil(
+        areas.length / itemsPerPage
+    );
+
+    const indexOfLastItem =
+        currentPage * itemsPerPage;
+
+    const indexOfFirstItem =
+        indexOfLastItem - itemsPerPage;
+
+    const currentAreas = areas.slice(
+        indexOfFirstItem,
+        indexOfLastItem
+    );
+
+
+    // Corregir página si cambia el número de elementos
     useEffect(() => {
-        if (currentPage > totalPages && totalPages > 0) {
+
+        if (
+            currentPage > totalPages &&
+            totalPages > 0
+        ) {
             setCurrentPage(totalPages);
         }
-    }, [areas.length, totalPages, currentPage]);
+
+    }, [
+        areas.length,
+        totalPages,
+        currentPage
+    ]);
+
 
     const goToNextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
-    };
 
-    const goToPrevPage = () => {
-        if (currentPage > 1) setCurrentPage(prev => prev - 1);
-    };
-
-    // CREATE
-    const handleCreate = async (e) => {
-        e.preventDefault();
-
-        if (!nombre.trim()) return alert('Nombre requerido');
-
-        try {
-            await createArea(nombre);
-            setNombre('');
-            loadAreas();
-        } catch (err) {
-            console.error(err.message);
+        if (currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
         }
     };
 
-    // EDIT
+
+    const goToPrevPage = () => {
+
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+        }
+    };
+
+
+    // ==================================================
+    // LIMPIAR MENSAJES
+    // ==================================================
+
+    const clearMessages = () => {
+        setMensaje('');
+        setError('');
+    };
+
+
+    // ==================================================
+    // CREAR ÁREA
+    // ==================================================
+
+    const handleCreate = async (e) => {
+
+        e.preventDefault();
+
+        clearMessages();
+
+        if (!nombre.trim()) {
+            setError('Nombre requerido');
+            return;
+        }
+
+        try {
+
+            const nuevaArea = await createArea(nombre);
+
+            setAreas(prev => [
+                nuevaArea,
+                ...prev
+            ]);
+
+            setNombre('');
+
+            setCurrentPage(1);
+
+            setMensaje(
+                'Área creada correctamente'
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
+            setError(err.message);
+        }
+    };
+
+
+    // ==================================================
+    // INICIAR EDICIÓN
+    // ==================================================
+
     const startEdit = (area) => {
+
+        clearMessages();
+
         setEditId(area.id);
+
         setEditNombre(area.nombre);
     };
 
+
+    // ==================================================
+    // CANCELAR EDICIÓN
+    // ==================================================
+
     const cancelEdit = () => {
+
         setEditId(null);
+
         setEditNombre('');
     };
 
+
+    // ==================================================
+    // GUARDAR EDICIÓN
+    // ==================================================
+
     const saveEdit = async () => {
-        if (!editNombre.trim()) return alert('Nombre requerido');
+
+        clearMessages();
+
+        if (!editNombre.trim()) {
+
+            setError('Nombre requerido');
+
+            return;
+        }
 
         try {
-            const update = await modArea(editId, editNombre);
-            setAreas(prev =>
-                prev.map(a => a.id === editId ? update : a)
+
+            const updatedArea = await modArea(
+                editId,
+                editNombre
             );
+
+            setAreas(prev =>
+                prev.map(area =>
+                    area.id === editId
+                        ? updatedArea
+                        : area
+                )
+            );
+
             cancelEdit();
+
+            setMensaje(
+                'Área actualizada correctamente'
+            );
+
         } catch (err) {
-            console.error(err.message);
+
+            console.error(err);
+
+            setError(err.message);
         }
     };
 
-    // MODAL CONTROL
-    const openModal = (id, type) => {
-        setSelectedId(id);
-        setActionType(type);
+
+    // ==================================================
+    // ABRIR MODAL DE CAMBIO DE ESTADO
+    // ==================================================
+
+    const openEstadoModal = (area) => {
+
+        clearMessages();
+
+        setSelectedArea(area);
+
         setIsModalOpen(true);
     };
 
+
+    // ==================================================
+    // CERRAR MODAL
+    // ==================================================
+
     const closeModal = () => {
+
         setIsModalOpen(false);
-        setSelectedId(null);
+
+        setSelectedArea(null);
     };
 
-    const handleConfirm = async () => {
-        try {
-            if (actionType === 'delete') {
-                await deleteArea(selectedId);
-            } else {
-                await estadoDelArea(selectedId);
-            }
 
-            loadAreas();
+    // ==================================================
+    // CAMBIAR ESTADO
+    // ==================================================
+
+    const handleCambiarEstado = async () => {
+
+        if (!selectedArea) {
+            return;
+        }
+
+        try {
+
+            clearMessages();
+
+            const response =
+                await cambiarEstadoArea(
+                    selectedArea.id
+                );
+
+            /*
+             * Backend devuelve:
+             *
+             * {
+             *   message: "...",
+             *   area: {...}
+             * }
+             */
+
+            const updatedArea = response.area;
+
+            setAreas(prev =>
+                prev.map(area =>
+                    area.id === updatedArea.id
+                        ? updatedArea
+                        : area
+                )
+            );
+
+            setMensaje(response.message);
+
             closeModal();
+
         } catch (err) {
-            console.error(err.message);
+
+            console.error(err);
+
+            setError(err.message);
+
+            closeModal();
         }
     };
 
+
+    // ==================================================
+    // RENDER
+    // ==================================================
+
     return (
+
         <div className="areas-container">
+
             <h2>Áreas / Menciones</h2>
 
-            {/*  FORM  */}
+
+            {/* ============================= */}
+            {/* MENSAJES */}
+            {/* ============================= */}
+
+            {mensaje && (
+                <div className="alert-success">
+                    {mensaje}
+                </div>
+            )}
+
+            {error && (
+                <div className="alert-error">
+                    {error}
+                </div>
+            )}
+
+
+            {/* ============================= */}
+            {/* FORMULARIO */}
+            {/* ============================= */}
+
             <form onSubmit={handleCreate}>
+
                 <input
                     value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
+                    onChange={(e) =>
+                        setNombre(e.target.value)
+                    }
                     placeholder="Nombre del área"
                 />
-                <button style={{ background: 'var(--uajms-blue-primary)', color: '#fff', padding: '10px 18px', borderRadius: '6px', cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
-                 type="submit">Agregar</button>
+
+                <button
+                    type="submit"
+                    style={{
+                        background:
+                            'var(--uajms-blue-primary)',
+                        color: '#fff',
+                        padding: '10px 18px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        border: 'none',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    Agregar
+                </button>
+
             </form>
 
-            {/*  TABLE  */}
+
+            {/* ============================= */}
+            {/* TABLA */}
+            {/* ============================= */}
+
             <div className="areas-table">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
 
-                    <tbody>
-                        {currentAreas.map(a => (
-                            <tr key={a.id}>
-                                <td>{a.id}</td>
-                                <td>
-                                    {editId === a.id ? (
-                                        <input
-                                            value={editNombre}
-                                            onChange={(e) => setEditNombre(e.target.value)}
-                                        />
-                                    ) : (
-                                        a.nombre
-                                    )}
-                                </td>
-                                <td>
-                                    <span
-                                        className={`badge ${a.estado === 'ACTIVO' ? 'activo' : 'inactivo'}`}
-                                        onClick={() => openModal(a.id, 'estado')}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        {a.estado === 'ACTIVO' ? <CheckCircleIcon /> : <CancelIcon />}
-                                        {a.estado}
-                                    </span>
-                                </td>
-                                <td>
-                                    {editId === a.id ? (
-                                        <>
-                                            <button onClick={saveEdit}>Guardar</button>
-                                            <button onClick={cancelEdit}>Cancelar</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button onClick={() => startEdit(a)}>
-                                                Editar
-                                            </button>
+                {loading ? (
 
-                                            <button onClick={() => openModal(a.id, 'delete')}>
-                                                Eliminar
-                                            </button>
-                                        </>
-                                    )}
-                                </td>
+                    <p>Cargando áreas...</p>
+
+                ) : (
+
+                    <table className="table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+
+                                <th>Nombre</th>
+
+                                <th>Estado</th>
+
+                                <th>Acciones</th>
+
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {currentAreas.length === 0 ? (
+
+                                <tr>
+
+                                    <td
+                                        colSpan="4"
+                                        style={{
+                                            textAlign: 'center'
+                                        }}
+                                    >
+                                        No existen áreas registradas
+                                    </td>
+
+                                </tr>
+
+                            ) : (
+
+                                currentAreas.map(area => (
+
+                                    <tr key={area.id}>
+
+                                        {/* ID */}
+                                        <td>
+                                            {area.id}
+                                        </td>
+
+
+                                        {/* NOMBRE */}
+                                        <td>
+
+                                            {editId === area.id ? (
+
+                                                <input
+                                                    value={editNombre}
+                                                    onChange={(e) =>
+                                                        setEditNombre(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                            ) : (
+
+                                                area.nombre
+
+                                            )}
+
+                                        </td>
+
+
+                                        {/* ESTADO */}
+                                        <td>
+
+                                            <span
+                                                className={
+                                                    `badge ${
+                                                        area.estado ===
+                                                        'ACTIVO'
+                                                            ? 'activo'
+                                                            : 'inactivo'
+                                                    }`
+                                                }
+                                            >
+
+                                                {area.estado ===
+                                                'ACTIVO' ? (
+
+                                                    <CheckCircleIcon />
+
+                                                ) : (
+
+                                                    <CancelIcon />
+
+                                                )}
+
+                                                {area.estado}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        {/* ACCIONES */}
+                                        <td>
+
+                                            {editId === area.id ? (
+
+                                                <>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            saveEdit
+                                                        }
+                                                    >
+                                                        Guardar
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            cancelEdit
+                                                        }
+                                                    >
+                                                        Cancelar
+                                                    </button>
+
+                                                </>
+
+                                            ) : (
+
+                                                <>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            startEdit(
+                                                                area
+                                                            )
+                                                        }
+                                                    >
+                                                        Editar
+                                                    </button>
+
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openEstadoModal(
+                                                                area
+                                                            )
+                                                        }
+                                                    >
+
+                                                        {area.estado ===
+                                                        'ACTIVO'
+                                                            ? 'Desactivar'
+                                                            : 'Activar'}
+
+                                                    </button>
+
+                                                </>
+
+                                            )}
+
+                                        </td>
+
+                                    </tr>
+
+                                ))
+
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                )}
+
             </div>
 
-            {/*  CONTROLES DE PAGINACIÓN  */}
+
+            {/* ============================= */}
+            {/* PAGINACIÓN */}
+            {/* ============================= */}
+
             {areas.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
-                    <button className='btn-page'
-                        onClick={goToPrevPage} 
-                        disabled={currentPage === 1}
-                        style={{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', padding: '6px 12px' }}
+
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent:
+                            'space-between',
+                        alignItems: 'center',
+                        marginTop: '15px'
+                    }}
+                >
+
+                    <button
+                        className="btn-page"
+                        onClick={goToPrevPage}
+                        disabled={
+                            currentPage === 1
+                        }
                     >
                         Anterior
                     </button>
 
+
                     <span>
-                        Página <strong>{currentPage}</strong> de <strong>{totalPages || 1}</strong>
+
+                        Página{' '}
+
+                        <strong>
+                            {currentPage}
+                        </strong>
+
+                        {' '}de{' '}
+
+                        <strong>
+                            {totalPages || 1}
+                        </strong>
+
                     </span>
 
-                    <button className='btn-page'
-                        onClick={goToNextPage} 
-                        disabled={currentPage === totalPages || totalPages === 0}
-                        style={{ opacity: (currentPage === totalPages || totalPages === 0) ? 0.5 : 1, cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer', padding: '6px 12px' }}
+
+                    <button
+                        className="btn-page"
+                        onClick={goToNextPage}
+                        disabled={
+                            currentPage ===
+                                totalPages ||
+                            totalPages === 0
+                        }
                     >
                         Siguiente
                     </button>
+
                 </div>
+
             )}
 
-            {/*  MODAL  */}
-            {isModalOpen && (
+
+            {/* ============================= */}
+            {/* MODAL CAMBIO DE ESTADO */}
+            {/* ============================= */}
+
+            {isModalOpen && selectedArea && (
+
                 <div className="modal-overlay">
+
                     <div className="modal-box">
+
                         <p>
-                            {actionType === 'delete'
-                                ? '¿Eliminar área definitivamente?'
-                                : '¿Cambiar estado del área?'}
+
+                            ¿Desea{' '}
+
+                            <strong>
+                                {selectedArea.estado ===
+                                'ACTIVO'
+                                    ? 'desactivar'
+                                    : 'activar'}
+                            </strong>
+
+                            {' '}el área{' '}
+
+                            <strong>
+                                {selectedArea.nombre}
+                            </strong>
+
+                            ?
+
                         </p>
 
+
                         <div className="modal-actions">
-                            <button onClick={closeModal}>Cancelar</button>
-                            <button className="danger" onClick={handleConfirm}>
-                                Confirmar
+
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                            >
+                                Cancelar
                             </button>
+
+
+                            <button
+                                type="button"
+                                className={
+                                    selectedArea.estado ===
+                                    'ACTIVO'
+                                        ? 'danger'
+                                        : ''
+                                }
+                                onClick={
+                                    handleCambiarEstado
+                                }
+                            >
+
+                                {selectedArea.estado ===
+                                'ACTIVO'
+                                    ? 'Desactivar'
+                                    : 'Activar'}
+
+                            </button>
+
                         </div>
+
                     </div>
+
                 </div>
+
             )}
+
         </div>
     );
 };
+
 
 export default AreasPage;

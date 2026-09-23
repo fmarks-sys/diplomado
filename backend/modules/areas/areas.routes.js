@@ -3,11 +3,27 @@ import * as controller from './areas.controller.js';
 
 const router = express.Router();
 
+
+// ======================================================
+// ÁREAS / MENCIONES
+// ======================================================
+
+// Listar todas
 router.get('/', controller.getAreas);
+
+// Listar únicamente activas
+// IMPORTANTE: debe ir antes de /:id si posteriormente
+// agregamos GET /:id
+router.get('/activas', controller.getAreasActivas);
+
+// Crear
 router.post('/', controller.crearArea);
+
+// Actualizar nombre
 router.put('/:id', controller.updateArea);
-// router.delete('/estado/:id', controller.deletArea)
-router.delete('/:id', controller.deleteArea);
-router.patch('/estado/:id', controller.deleteAreaLogica); //eliminaciom logica
+
+// Activar / desactivar
+router.patch('/:id/estado', controller.cambiarEstadoArea);
+
 
 export default router;

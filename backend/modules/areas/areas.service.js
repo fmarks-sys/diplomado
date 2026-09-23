@@ -1,30 +1,109 @@
 import * as repo from './areas.repository.js';
 
-//listar todas las areas
+
+// ======================================================
+// LISTAR TODAS LAS ÁREAS
+// ======================================================
 export const listAreas = async () => {
     return await repo.getAllAreas();
 };
 
-//agregar una nueva area
-export const addAreas = async (nombre) => {
-    if (!nombre) throw new Error('Nombre Requerido');
 
-    return await repo.createAreas(nombre);
+// ======================================================
+// LISTAR SOLO ÁREAS ACTIVAS
+// ======================================================
+export const listAreasActivas = async () => {
+    return await repo.getAllAreasActivas();
 };
 
-//modificar el area
+
+// ======================================================
+// CREAR ÁREA
+// ======================================================
+export const addArea = async (nombre) => {
+
+    if (!nombre || !nombre.trim()) {
+        throw new Error('Nombre requerido');
+    }
+
+    const nombreNormalizado = nombre
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toUpperCase();
+
+    try {
+        return await repo.createArea(nombreNormalizado);
+
+    } catch (error) {
+
+        // PostgreSQL: unique_violation
+        if (error.code === '23505') {
+            throw new Error('Ya existe un área con ese nombre');
+        }
+
+        throw error;
+    }
+};
+
+
+// ======================================================
+// ACTUALIZAR ÁREA
+// ======================================================
 export const editArea = async (id, nombre) => {
-    if (!nombre) throw new Error('Nombre requerido');
 
-    return await repo.updateArea(id, nombre);
+    if (!id || isNaN(Number(id))) {
+        throw new Error('ID de área inválido');
+    }
+
+    if (!nombre || !nombre.trim()) {
+        throw new Error('Nombre requerido');
+    }
+
+    const nombreNormalizado = nombre
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toUpperCase();
+
+    try {
+
+        const area = await repo.updateArea(
+            id,
+            nombreNormalizado
+        );
+
+        if (!area) {
+            throw new Error('Área no encontrada');
+        }
+
+        return area;
+
+    } catch (error) {
+
+        // PostgreSQL: unique_violation
+        if (error.code === '23505') {
+            throw new Error('Ya existe un área con ese nombre');
+        }
+
+        throw error;
+    }
 };
 
-//eliminacion fisica
-export const removeArea = async (id) => {
-    return await repo.deletAreas(id);
-};
 
-//eliminacion logica
-export const removeAreaLogica = async (id) => {
-    return await repo.disableArea(id);
+// ======================================================
+// CAMBIAR ESTADO
+// ACTIVO <-> INACTIVO
+// ======================================================
+export const changeAreaEstado = async (id) => {
+
+    if (!id || isNaN(Number(id))) {
+        throw new Error('ID de área inválido');
+    }
+
+    const area = await repo.toggleAreaEstado(id);
+
+    if (!area) {
+        throw new Error('Área no encontrada');
+    }
+
+    return area;
 };
