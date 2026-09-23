@@ -21,6 +21,13 @@ function SideBar() {
                     </li>
 
                     <li>
+                        <NavLink to="/dashboard/usuarios" className={({ isActive }) => isActive ? 'active' : ''}>
+                            <CategoryIcon className="icon" />
+                            <span>Usuarios</span>
+                        </NavLink>
+                    </li>
+
+                    <li>
                         <NavLink to="/dashboard/areas" className={({ isActive }) => isActive ? 'active' : ''}>
                             <CategoryIcon className="icon" />
                             <span>Areas</span>

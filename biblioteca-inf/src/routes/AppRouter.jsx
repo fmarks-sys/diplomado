@@ -5,6 +5,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 
 // páginas (crea esto)
 import DashboardHome from '../pages/DashboardHome';
+import UsuariosPage from '../pages/usuarios/UsuariosPage';
 import AreasPage from '../pages/areas/AreasPage';
 import RecursosPage from '../pages/recursos/RecursosPage';
 import LectoresPage from '../pages/lectores/LectoresPage';
@@ -31,6 +32,7 @@ const AppRouter = () => {
                 >
                     {/*  RUTA HIJA */}
                     <Route index element={<DashboardHome />} />
+                    <Route path="usuarios" element={<UsuariosPage />} />
                     <Route path="areas" element={<AreasPage />} />
                     <Route path="recursos" element={<RecursosPage />} />
                     <Route path="lectores" element={<LectoresPage />} />

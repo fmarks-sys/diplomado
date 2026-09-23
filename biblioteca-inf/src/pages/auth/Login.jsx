@@ -8,7 +8,7 @@ const Login = () => {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        correo: '',
+        username: '',
         password: '',
     });
 
@@ -26,7 +26,7 @@ const Login = () => {
         e.preventDefault();
 
         //  VALIDACIÓN ANTES
-        if (!form.correo || !form.password) {
+        if (!form.username || !form.password) {
             setError('Completa todos los campos');
             return;
         }
@@ -53,9 +53,9 @@ const Login = () => {
                 {error && <p className="error">{error}</p>}
 
                 <input
-                    name="correo"
-                    placeholder="Correo"
-                    value={form.correo}
+                    name="username"
+                    placeholder="username"
+                    value={form.username}
                     onChange={handleChange}
                 />
 

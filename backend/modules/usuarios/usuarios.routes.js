@@ -3,13 +3,9 @@ import express from 'express';
 import * as controller
     from './usuarios.controller.js';
 
-import {
-    verifyToken
-} from '../../middlewares/auth.middleware.js';
+import { verifyToken } from '../../middlewares/authMiddleware.js';
 
-import {
-    isAdmin
-} from '../../middlewares/role.middleware.js';
+import { isAdmin } from '../../middlewares/rolMiddleware.js';
 
 
 const router = express.Router();
