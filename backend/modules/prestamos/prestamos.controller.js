@@ -1,57 +1,248 @@
 import * as service from './prestamos.service.js';
 
-// GET
-export const getPrestamos = async (req, res) => {
+
+// ======================================================
+// GET - LISTAR TODOS LOS PRÉSTAMOS
+// ======================================================
+export const getPrestamos = async (
+    req,
+    res
+) => {
+
     try {
-        const data = await service.listPrestamos();
-        res.json(data);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+
+        const data =
+            await service.listPrestamos();
+
+
+        return res
+            .status(200)
+            .json(data);
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al listar préstamos:',
+            error
+        );
+
+
+        return res
+            .status(500)
+            .json({
+                error:
+                    'Error al obtener los préstamos'
+            });
     }
 };
 
-// POST
-export const crearPrestamo = async (req, res) => {
+
+// ======================================================
+// POST - CREAR PRÉSTAMO
+// ======================================================
+export const crearPrestamo = async (
+    req,
+    res
+) => {
+
     try {
-        const data = await service.addPrestamo(req.body);
-        res.json(data);
-    } catch (e) {
-        res.status(400).json({ error: e.message });
+
+        const data =
+            await service.addPrestamo(
+                req.body
+            );
+
+
+        return res
+            .status(201)
+            .json({
+                message:
+                    'Préstamo registrado correctamente',
+
+                prestamo:
+                    data
+            });
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al crear préstamo:',
+            error
+        );
+
+
+        return res
+            .status(400)
+            .json({
+                error:
+                    error.message
+            });
     }
 };
 
-// DEVOLVER
-export const devolver = async (req, res) => {
+
+// ======================================================
+// PATCH - DEVOLVER PRÉSTAMO
+// ======================================================
+export const devolver = async (
+    req,
+    res
+) => {
+
     try {
-        const data = await service.devolverPrestamo(req.params.id);
-        res.json(data);
-    } catch (e) {
-        res.status(400).json({ error: e.message });
+
+        const data =
+            await service.devolverPrestamo(
+                req.params.id
+            );
+
+
+        return res
+            .status(200)
+            .json({
+                message:
+                    'Recurso devuelto correctamente',
+
+                prestamo:
+                    data
+            });
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al devolver préstamo:',
+            error
+        );
+
+
+        return res
+            .status(400)
+            .json({
+                error:
+                    error.message
+            });
     }
 };
 
-//lector
-export const getMisPrestamos = async (req, res) => {
+
+// ======================================================
+// GET - MIS PRÉSTAMOS
+// ======================================================
+export const getMisPrestamos = async (
+    req,
+    res
+) => {
+
     try {
-        const usuario_id = req.user.id; // 🔥 viene del JWT
 
-        const data = await service.listMisPrestamos(usuario_id);
+        // verifyToken coloca el JWT decodificado
+        // directamente dentro de req.user.
+        //
+        // JWT:
+        // {
+        //    loginId,
+        //    personaId,
+        //    rol,
+        //    iat,
+        //    exp
+        // }
 
-        res.json(data);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+        if (!req.user?.personaId) {
+
+            return res
+                .status(401)
+                .json({
+                    error:
+                        'Usuario no autenticado'
+                });
+        }
+
+
+        const personaId =
+            req.user.personaId;
+
+
+        const data =
+            await service.listMisPrestamos(
+                personaId
+            );
+
+
+        return res
+            .status(200)
+            .json(data);
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al obtener préstamos del lector:',
+            error
+        );
+
+
+        return res
+            .status(500)
+            .json({
+                error:
+                    error.message
+            });
     }
 };
 
-//
-export const getMisAlertas = async (req, res) => {
+
+// ======================================================
+// GET - MIS ALERTAS
+// ======================================================
+export const getMisAlertas = async (
+    req,
+    res
+) => {
+
     try {
-        const usuario_id = req.user.id;
 
-        const data = await service.listMisAlertas(usuario_id);
+        if (!req.user?.personaId) {
 
-        res.json(data);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+            return res
+                .status(401)
+                .json({
+                    error:
+                        'Usuario no autenticado'
+                });
+        }
+
+
+        const personaId =
+            req.user.personaId;
+
+
+        const data =
+            await service.listMisAlertas(
+                personaId
+            );
+
+
+        return res
+            .status(200)
+            .json(data);
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al obtener alertas del lector:',
+            error
+        );
+
+
+        return res
+            .status(500)
+            .json({
+                error:
+                    error.message
+            });
     }
 };

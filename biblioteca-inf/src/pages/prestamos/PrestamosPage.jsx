@@ -1,379 +1,1246 @@
-import { useEffect, useState } from 'react';
-import { getPrestamos, createPrestamo, devolverPrestamo } from '../../services/prestamosService';
-import { getLectores } from '../../services/lectoresService';
-import { getRecursos } from '../../services/recursosService';
+import {
+    useEffect,
+    useState
+} from 'react';
+
+import {
+    getPrestamos,
+    createPrestamo,
+    devolverPrestamo
+} from '../../services/prestamosService';
+
+import {
+    getLectores
+} from '../../services/lectoresService';
+
+import {
+    getRecursos
+} from '../../services/recursosService';
+
 import './prestamos.css';
 
+
 const PrestamosPage = () => {
+
+    // ==================================================
+    // DATOS
+    // ==================================================
     const [prestamos, setPrestamos] = useState([]);
     const [lectores, setLectores] = useState([]);
     const [recursos, setRecursos] = useState([]);
 
-    // Control del Modal
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Estados para los inputs de búsqueda (Autocompletado)
-    const [searchLector, setSearchLector] = useState('');
-    const [searchRecurso, setSearchRecurso] = useState('');
+    // ==================================================
+    // ESTADOS GENERALES
+    // ==================================================
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
-    // Obtener la fecha de hoy en formato local YYYY-MM-DD sin desfase horario
+    const [isModalOpen, setIsModalOpen] =
+        useState(false);
+
+
+    // ==================================================
+    // AUTOCOMPLETADO
+    // ==================================================
+    const [searchLector, setSearchLector] =
+        useState('');
+
+    const [searchRecurso, setSearchRecurso] =
+        useState('');
+
+
+    // ==================================================
+    // FECHA LOCAL
+    // ==================================================
     const getTodayLocalDate = () => {
+
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
+
+        const year =
+            today.getFullYear();
+
+        const month =
+            String(
+                today.getMonth() + 1
+            ).padStart(2, '0');
+
+        const day =
+            String(
+                today.getDate()
+            ).padStart(2, '0');
+
         return `${year}-${month}-${day}`;
     };
 
-    // Estado Inicial del Formulario
-    const initialFormState = {
+
+    // ==================================================
+    // FORMULARIO
+    //
+    // fecha_prestamo NO se envía.
+    // PostgreSQL/backend la genera automáticamente.
+    // ==================================================
+    const createInitialFormState = () => ({
         lector_id: '',
         recurso_id: '',
-        fecha_prestamo: getTodayLocalDate(), // Fecha de hoy asignada automáticamente
-        fecha_devolucion_prevista: getTodayLocalDate(),
+        fecha_devolucion_prevista:
+            getTodayLocalDate(),
         tipo_prestamo: 'DOMICILIO'
-    };
-
-    //formatear fecha
-    // Formatea ISO a fecha legible local (dd/mm/yyyy)
-const formatDate = (isoString) => {
-    if (!isoString) return '—';
-    const date = new Date(isoString);
-    return date.toLocaleDateString('es-BO', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
     });
-};
-
-// (Opcional) Si quieres incluir hora y minutos:
-const formatDateTime = (isoString) => {
-    if (!isoString) return '—';
-    const date = new Date(isoString);
-    return date.toLocaleString('es-BO', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
 
 
-    const [form, setForm] = useState(initialFormState);
+    const [form, setForm] = useState(
+        createInitialFormState
+    );
 
-    // Estados de Paginación
-    const [currentPage, setCurrentPage] = useState(1);
+
+    // ==================================================
+    // PAGINACIÓN
+    // ==================================================
+    const [currentPage, setCurrentPage] =
+        useState(1);
+
     const itemsPerPage = 5;
 
-    // CARGAR DATOS MEDIANTE SERVICIOS
-    const loadData = async () => {
-        try {
-            const dataPrestamos = await getPrestamos();
-            const dataLectores = await getLectores();
-            const dataRecursos = await getRecursos();
 
-            setPrestamos(dataPrestamos);
-            // Filtrar solo lectores activos
-            setLectores(dataLectores.filter(l => l.estado === 'ACTIVO'));
-            // Filtrar recursos con stock disponible
-            setRecursos(dataRecursos.filter(r => r.cantidad_disponible > 0));
-        } catch (err) {
-            console.error('Error al cargar datos:', err.message);
-            alert('Error al cargar los datos necesarios');
+    // ==================================================
+    // FORMATEAR FECHA
+    //
+    // Evitamos new Date("YYYY-MM-DD") para no generar
+    // desplazamientos por zona horaria.
+    // ==================================================
+    const formatDate = (value) => {
+
+        if (!value) {
+            return '—';
+        }
+
+        const fecha =
+            String(value).substring(0, 10);
+
+        const partes =
+            fecha.split('-');
+
+        if (partes.length !== 3) {
+            return value;
+        }
+
+        const [year, month, day] =
+            partes;
+
+        return `${day}/${month}/${year}`;
+    };
+
+
+    // ==================================================
+    // NOMBRE COMPLETO DEL LECTOR
+    // ==================================================
+    const getLectorNombre = (lector) => {
+
+        return [
+            lector.nombres,
+            lector.ap,
+            lector.am
+        ]
+            .filter(Boolean)
+            .join(' ');
+    };
+
+
+    // ==================================================
+    // TEXTO PARA AUTOCOMPLETADO DEL LECTOR
+    // ==================================================
+    const getLectorOptionText = (lector) => {
+
+        const nombre =
+            getLectorNombre(lector);
+
+        const ci =
+            lector.ci
+                ? ` (CI: ${lector.ci})`
+                : '';
+
+        const ru =
+            lector.ru
+                ? ` - RU: ${lector.ru}`
+                : '';
+
+        return `${nombre}${ci}${ru}`;
+    };
+
+
+    // ==================================================
+    // TEXTO DEL RECURSO
+    // ==================================================
+    const getRecursoOptionText = (recurso) => {
+
+        return (
+            `${recurso.titulo} - ` +
+            `[${recurso.codigo_topografico}]`
+        );
+    };
+
+
+    // ==================================================
+    // CARGAR DATOS
+    // ==================================================
+    const loadData = async () => {
+
+        try {
+
+            setLoading(true);
+
+
+            const [
+                dataPrestamos,
+                dataLectores,
+                dataRecursos
+            ] = await Promise.all([
+                getPrestamos(),
+                getLectores(),
+                getRecursos()
+            ]);
+
+
+            setPrestamos(
+                Array.isArray(dataPrestamos)
+                    ? dataPrestamos
+                    : []
+            );
+
+
+            // Solo lectores habilitados
+            setLectores(
+                Array.isArray(dataLectores)
+                    ? dataLectores.filter(
+                        lector =>
+                            lector.estado === 'ACTIVO'
+                    )
+                    : []
+            );
+
+
+            // Solo recursos disponibles
+            setRecursos(
+                Array.isArray(dataRecursos)
+                    ? dataRecursos.filter(
+                        recurso =>
+                            recurso.estado === 'DISPONIBLE' &&
+                            Number(
+                                recurso.cantidad_disponible
+                            ) > 0
+                    )
+                    : []
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                'Error al cargar préstamos:',
+                error
+            );
+
+            alert(
+                error.message ||
+                'Error al cargar los datos'
+            );
+
+
+        } finally {
+
+            setLoading(false);
         }
     };
+
 
     useEffect(() => {
         loadData();
     }, []);
 
-    // CÁLCULOS DE PAGINACIÓN
-    const totalPages = Math.ceil(prestamos.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentPrestamos = prestamos.slice(indexOfFirstItem, indexOfLastItem);
+
+    // ==================================================
+    // PAGINACIÓN
+    // ==================================================
+    const totalPages =
+        Math.ceil(
+            prestamos.length /
+            itemsPerPage
+        );
+
+
+    const indexOfLastItem =
+        currentPage * itemsPerPage;
+
+
+    const indexOfFirstItem =
+        indexOfLastItem -
+        itemsPerPage;
+
+
+    const currentPrestamos =
+        prestamos.slice(
+            indexOfFirstItem,
+            indexOfLastItem
+        );
+
 
     useEffect(() => {
-        if (currentPage > totalPages && totalPages > 0) {
+
+        if (
+            currentPage > totalPages &&
+            totalPages > 0
+        ) {
+
             setCurrentPage(totalPages);
         }
-    }, [prestamos.length, totalPages, currentPage]);
 
-    const goToNextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
-    };
+    }, [
+        prestamos.length,
+        totalPages,
+        currentPage
+    ]);
 
-    const goToPrevPage = () => {
-        if (currentPage > 1) setCurrentPage(prev => prev - 1);
-    };
 
-    // MANEJADORES DE BÚSQUEDA Y SELECCIÓN
-    const handleLectorChange = (e) => {
-        const val = e.target.value;
-        setSearchLector(val);
+    // ==================================================
+    // ABRIR MODAL
+    // ==================================================
+    const openModal = () => {
 
-        // Buscar coincidencia exacta por texto generado en el datalist
-        const lectorEncontrado = lectores.find(
-            l => `${l.nombres} ${l.apellidos} (CI: ${l.ci})` === val
+        setForm(
+            createInitialFormState()
         );
 
-        setForm(prev => ({
-            ...prev,
-            lector_id: lectorEncontrado ? lectorEncontrado.id : ''
-        }));
+        setSearchLector('');
+        setSearchRecurso('');
+
+        setIsModalOpen(true);
     };
 
-    const handleRecursoChange = (e) => {
-        const val = e.target.value;
-        setSearchRecurso(val);
 
-        // Buscar coincidencia exacta por texto generado en el datalist
-        const recursoEncontrado = recursos.find(
-            r => `${r.titulo} - [${r.codigo_topografico}]` === val
-        );
+    // ==================================================
+    // CERRAR MODAL
+    // ==================================================
+    const closeModal = () => {
 
-        setForm(prev => ({
-            ...prev,
-            recurso_id: recursoEncontrado ? recursoEncontrado.id : ''
-        }));
-    };
-
-    const handleChange = (e) => {
-        setForm(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!form.lector_id || !form.recurso_id) {
-            alert('Debes seleccionar un Lector y un Recurso válidos de la lista de sugerencias');
+        if (saving) {
             return;
         }
 
+        setIsModalOpen(false);
+
+        setSearchLector('');
+        setSearchRecurso('');
+
+        setForm(
+            createInitialFormState()
+        );
+    };
+
+
+    // ==================================================
+    // SELECCIONAR LECTOR
+    // ==================================================
+    const handleLectorChange = (e) => {
+
+        const value =
+            e.target.value;
+
+        setSearchLector(value);
+
+
+        const lectorEncontrado =
+            lectores.find(
+                lector =>
+                    getLectorOptionText(
+                        lector
+                    ) === value
+            );
+
+
+        setForm(prev => ({
+            ...prev,
+
+            lector_id:
+                lectorEncontrado
+                    ? lectorEncontrado.id
+                    : ''
+        }));
+    };
+
+
+    // ==================================================
+    // SELECCIONAR RECURSO
+    // ==================================================
+    const handleRecursoChange = (e) => {
+
+        const value =
+            e.target.value;
+
+        setSearchRecurso(value);
+
+
+        const recursoEncontrado =
+            recursos.find(
+                recurso =>
+                    getRecursoOptionText(
+                        recurso
+                    ) === value
+            );
+
+
+        setForm(prev => ({
+            ...prev,
+
+            recurso_id:
+                recursoEncontrado
+                    ? recursoEncontrado.id
+                    : ''
+        }));
+    };
+
+
+    // ==================================================
+    // INPUT NORMAL
+    // ==================================================
+    const handleChange = (e) => {
+
+        const {
+            name,
+            value
+        } = e.target;
+
+
+        setForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+
+    // ==================================================
+    // REGISTRAR PRÉSTAMO
+    // ==================================================
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+
+        if (!form.lector_id) {
+
+            alert(
+                'Debes seleccionar un lector válido'
+            );
+
+            return;
+        }
+
+
+        if (!form.recurso_id) {
+
+            alert(
+                'Debes seleccionar un recurso válido'
+            );
+
+            return;
+        }
+
+
+        if (
+            !form.fecha_devolucion_prevista
+        ) {
+
+            alert(
+                'Debes seleccionar la fecha de devolución'
+            );
+
+            return;
+        }
+
+
         try {
-            await createPrestamo(form);
-            
-            // Limpiar formulario y cerrar modal
-            setForm(initialFormState);
-            setSearchLector('');
-            setSearchRecurso('');
+
+            setSaving(true);
+
+
+            // Solo enviamos lo que espera el backend.
+            const payload = {
+
+                lector_id:
+                    Number(form.lector_id),
+
+                recurso_id:
+                    Number(form.recurso_id),
+
+                fecha_devolucion_prevista:
+                    form.fecha_devolucion_prevista,
+
+                tipo_prestamo:
+                    form.tipo_prestamo
+            };
+
+
+            await createPrestamo(
+                payload
+            );
+
+
             setIsModalOpen(false);
 
+            setSearchLector('');
+            setSearchRecurso('');
+
+            setForm(
+                createInitialFormState()
+            );
+
+
+            setCurrentPage(1);
+
             await loadData();
-            alert('Préstamo registrado exitosamente');
-        } catch (err) {
-            alert(err.message || 'Error al registrar el préstamo');
+
+
+            alert(
+                'Préstamo registrado correctamente'
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                'Error al registrar préstamo:',
+                error
+            );
+
+            alert(
+                error.message ||
+                'Error al registrar el préstamo'
+            );
+
+
+        } finally {
+
+            setSaving(false);
         }
     };
 
+
+    // ==================================================
+    // DEVOLVER
+    // ==================================================
     const handleDevolver = async (id) => {
-        if (!confirm('¿Registrar devolución del recurso?')) return;
+
+        const confirmar =
+            window.confirm(
+                '¿Registrar la devolución de este recurso?'
+            );
+
+
+        if (!confirmar) {
+            return;
+        }
+
 
         try {
+
             await devolverPrestamo(id);
+
             await loadData();
-        } catch (err) {
-            alert(err.message || 'Error al registrar la devolución');
+
+
+            alert(
+                'Devolución registrada correctamente'
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                'Error al registrar devolución:',
+                error
+            );
+
+            alert(
+                error.message ||
+                'Error al registrar la devolución'
+            );
         }
     };
 
+
+    // ==================================================
+    // BADGE
+    // ==================================================
+    const getEstadoClass = (estado) => {
+
+        switch (estado) {
+
+            case 'PRESTADO':
+                return 'prestado';
+
+            case 'VENCIDO':
+                return 'vencido';
+
+            case 'DEVUELTO':
+                return 'devuelto';
+
+            default:
+                return '';
+        }
+    };
+
+
+    // ==================================================
+    // RENDER
+    // ==================================================
     return (
+
         <div className="prestamos-page">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 className="prestamos-title" style={{ margin: 0 }}>Préstamos</h2>
+
+            {/* ==========================================
+                ENCABEZADO
+            ========================================== */}
+
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent:
+                        'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }}
+            >
+
+                <h2
+                    className="prestamos-title"
+                    style={{ margin: 0 }}
+                >
+                    Préstamos
+                </h2>
+
+
                 <button
-                    onClick={() => setIsModalOpen(true)}
-                    style={{ background: 'var(--uajms-blue-primary)', color: '#fff', padding: '10px 18px', borderRadius: '6px', cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
+                    type="button"
+                    onClick={openModal}
+
+                    style={{
+                        background:
+                            'var(--uajms-blue-primary)',
+
+                        color: '#fff',
+                        padding: '10px 18px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        border: 'none',
+                        fontWeight: 'bold'
+                    }}
                 >
                     + Asignar Nuevo Préstamo
                 </button>
+
             </div>
 
-            {/* TABLA DE PRÉSTAMOS */}
+
+            {/* ==========================================
+                TABLA
+            ========================================== */}
+
             <div className="prestamos-table">
+
                 <table className="table">
+
                     <thead>
+
                         <tr>
+
                             <th>ID</th>
+
                             <th>Lector</th>
+
                             <th>Recurso</th>
+
                             <th>Fecha Préstamo</th>
-                            <th>Devolución Prevista</th>
+
+                            <th>
+                                Devolución Prevista
+                            </th>
+
+                            <th>Tipo</th>
+
                             <th>Estado</th>
+
                             <th>Acción</th>
+
                         </tr>
+
                     </thead>
+
+
                     <tbody>
-    {currentPrestamos.map(p => (
-        <tr key={p.id}>
-            <td>{p.id}</td>
-            <td>{p.lector_nombre}</td>
-            <td>{p.recurso_titulo}</td>
 
-            {/* Aplicamos la función de formato aquí */}
-            <td>{formatDate(p.fecha_prestamo)}</td>
-            <td>{formatDate(p.fecha_devolucion_prevista)}</td>
+                        {loading ? (
 
-            <td>
-                <span className={`badge ${p.estado === 'PRESTADO' ? 'prestado' : 'disponible'}`}>
-                    {p.estado}
-                </span>
-            </td>
-            <td>
-                {p.estado === 'PRESTADO' && (
-                    <button
-                        className="btn-return"
-                        onClick={() => handleDevolver(p.id)}
-                    >
-                        Devolver
-                    </button>
-                )}
-            </td>
-        </tr>
-    ))}
-</tbody>
+                            <tr>
+
+                                <td
+                                    colSpan="8"
+                                    style={{
+                                        textAlign:
+                                            'center'
+                                    }}
+                                >
+                                    Cargando préstamos...
+                                </td>
+
+                            </tr>
+
+                        ) : currentPrestamos.length === 0 ? (
+
+                            <tr>
+
+                                <td
+                                    colSpan="8"
+                                    style={{
+                                        textAlign:
+                                            'center'
+                                    }}
+                                >
+                                    No existen préstamos registrados.
+                                </td>
+
+                            </tr>
+
+                        ) : (
+
+                            currentPrestamos.map(
+                                prestamo => (
+
+                                    <tr
+                                        key={
+                                            prestamo.id
+                                        }
+                                    >
+
+                                        <td>
+                                            {prestamo.id}
+                                        </td>
+
+
+                                        <td>
+                                            {
+                                                prestamo.lector_nombre
+                                            }
+                                        </td>
+
+
+                                        <td>
+
+                                            <strong>
+                                                {
+                                                    prestamo.recurso_titulo
+                                                }
+                                            </strong>
+
+                                            {
+                                                prestamo.codigo_topografico &&
+                                                (
+                                                    <>
+                                                        <br />
+
+                                                        <small>
+                                                            {
+                                                                prestamo.codigo_topografico
+                                                            }
+                                                        </small>
+                                                    </>
+                                                )
+                                            }
+
+                                        </td>
+
+
+                                        <td>
+                                            {
+                                                formatDate(
+                                                    prestamo.fecha_prestamo
+                                                )
+                                            }
+                                        </td>
+
+
+                                        <td>
+                                            {
+                                                formatDate(
+                                                    prestamo.fecha_devolucion_prevista
+                                                )
+                                            }
+                                        </td>
+
+
+                                        <td>
+                                            {
+                                                prestamo.tipo_prestamo
+                                            }
+                                        </td>
+
+
+                                        <td>
+
+                                            <span
+                                                className={
+                                                    `badge ${getEstadoClass(
+                                                        prestamo.estado
+                                                    )}`
+                                                }
+                                            >
+                                                {
+                                                    prestamo.estado
+                                                }
+                                            </span>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {(
+                                                prestamo.estado ===
+                                                'PRESTADO' ||
+
+                                                prestamo.estado ===
+                                                'VENCIDO'
+                                            ) && (
+
+                                                <button
+                                                    type="button"
+
+                                                    className="btn-return"
+
+                                                    onClick={() =>
+                                                        handleDevolver(
+                                                            prestamo.id
+                                                        )
+                                                    }
+                                                >
+                                                    Devolver
+                                                </button>
+                                            )}
+
+                                            {
+                                                prestamo.estado ===
+                                                'DEVUELTO' &&
+                                                (
+                                                    <span>
+                                                        —
+                                                    </span>
+                                                )
+                                            }
+
+                                        </td>
+
+                                    </tr>
+                                )
+                            )
+                        )}
+
+                    </tbody>
+
                 </table>
+
             </div>
 
-            {/* CONTROLES DE PAGINACIÓN */}
-            {prestamos.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+
+            {/* ==========================================
+                PAGINACIÓN
+            ========================================== */}
+
+            {!loading &&
+                prestamos.length > 0 && (
+
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent:
+                            'space-between',
+                        alignItems: 'center',
+                        marginTop: '15px'
+                    }}
+                >
+
                     <button
-                        className='btn-page'
-                        onClick={goToPrevPage}
-                        disabled={currentPage === 1}
-                        style={{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', padding: '6px 12px' }}
+                        type="button"
+
+                        className="btn-page"
+
+                        onClick={() =>
+                            setCurrentPage(
+                                prev =>
+                                    Math.max(
+                                        1,
+                                        prev - 1
+                                    )
+                            )
+                        }
+
+                        disabled={
+                            currentPage === 1
+                        }
                     >
                         Anterior
                     </button>
 
+
                     <span>
-                        Página <strong>{currentPage}</strong> de <strong>{totalPages || 1}</strong>
+
+                        Página{' '}
+
+                        <strong>
+                            {currentPage}
+                        </strong>
+
+                        {' '}de{' '}
+
+                        <strong>
+                            {totalPages || 1}
+                        </strong>
+
                     </span>
 
+
                     <button
-                        className='btn-page'
-                        onClick={goToNextPage}
-                        disabled={currentPage === totalPages || totalPages === 0}
-                        style={{ opacity: (currentPage === totalPages || totalPages === 0) ? 0.5 : 1, cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer', padding: '6px 12px' }}
+                        type="button"
+
+                        className="btn-page"
+
+                        onClick={() =>
+                            setCurrentPage(
+                                prev =>
+                                    Math.min(
+                                        totalPages,
+                                        prev + 1
+                                    )
+                            )
+                        }
+
+                        disabled={
+                            currentPage >=
+                            totalPages
+                        }
                     >
                         Siguiente
                     </button>
+
                 </div>
             )}
 
-            {/* MODAL DE ASIGNACIÓN DE PRÉSTAMO */}
+
+            {/* ==========================================
+                MODAL
+            ========================================== */}
+
             {isModalOpen && (
+
                 <div className="modal-overlay">
-                    <div className="modal-box" style={{ maxWidth: '500px' }}>
-                        <h3>Asignar Nuevo Préstamo</h3>
 
-                        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '12px', textAlign: 'left', marginTop: '15px' }}>
-                            {/* AUTOCOMPLETADO LECTOR */}
+                    <div
+                        className="modal-box"
+
+                        style={{
+                            maxWidth: '520px'
+                        }}
+                    >
+
+                        <h3>
+                            Asignar Nuevo Préstamo
+                        </h3>
+
+
+                        <form
+                            onSubmit={
+                                handleSubmit
+                            }
+
+                            style={{
+                                display: 'grid',
+                                gap: '14px',
+                                textAlign: 'left',
+                                marginTop: '15px'
+                            }}
+                        >
+
+                            {/* =========================
+                                LECTOR
+                            ========================= */}
+
                             <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Buscar Lector *</label>
+
+                                <label>
+                                    Buscar Lector *
+                                </label>
+
+
                                 <input
+                                    type="text"
+
                                     list="lista-lectores"
-                                    placeholder="Escribe Nombre o CI..."
-                                    value={searchLector}
-                                    onChange={handleLectorChange}
-                                    style={{ width: '100%', padding: '8px' }}
+
+                                    placeholder={
+                                        'Escribe nombre, CI o RU...'
+                                    }
+
+                                    value={
+                                        searchLector
+                                    }
+
+                                    onChange={
+                                        handleLectorChange
+                                    }
+
+                                    autoComplete="off"
+
+                                    required
+
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px'
+                                    }}
                                 />
-                                <select
-  name="lector_id"
-  value={form.lector_id}
-  onChange={handleChange}
->
-  <option value="">Seleccionar lector</option>
-  {lectores.map(l => (
-    <option key={l.id} value={l.id}>
-      {l.nombres} {l.apellidos}
-    </option>
-  ))}
-</select>
-                            </div>
 
-                            {/* AUTOCOMPLETADO RECURSO */}
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Buscar Recurso (Libro/Tesis) *</label>
-                                <input
-                                    list="lista-recursos"
-                                    placeholder="Escribe Título o Código..."
-                                    value={searchRecurso}
-                                    onChange={handleRecursoChange}
-                                    style={{ width: '100%', padding: '8px' }}
-                                />
-                                <datalist id="lista-recursos">
-                                    {recursos.map(r => (
-                                        <option key={r.id} value={`${r.titulo} - [${r.codigo_topografico}]`} />
-                                    ))}
-                                </datalist>
-                            </div>
 
-                            {/* FECHAS Y TIPO */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <div>
-                                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Fecha Préstamo</label>
-                                    <input
-                                        type="date"
-                                        name="fecha_prestamo"
-                                        value={form.fecha_prestamo}
-                                        onChange={handleChange}
-                                        style={{ width: '100%', padding: '8px' }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Fecha Devolución</label>
-                                    <input
-                                        type="date"
-                                        name="fecha_devolucion_prevista"
-                                        value={form.fecha_devolucion_prevista}
-                                        onChange={handleChange}
-                                        style={{ width: '100%', padding: '8px' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Tipo Préstamo</label>
-                                <select
-                                    name="tipo_prestamo"
-                                    value={form.tipo_prestamo}
-                                    onChange={handleChange}
-                                    style={{ width: '100%', padding: '8px' }}
+                                <datalist
+                                    id="lista-lectores"
                                 >
-                                    <option value="DOMICILIO">Domicilio</option>
-                                    <option value="SALA">Sala</option>
-                                </select>
+
+                                    {lectores.map(
+                                        lector => (
+
+                                            <option
+                                                key={
+                                                    lector.id
+                                                }
+
+                                                value={
+                                                    getLectorOptionText(
+                                                        lector
+                                                    )
+                                                }
+                                            />
+
+                                        )
+                                    )}
+
+                                </datalist>
+
                             </div>
 
-                            {/* ACCIONES MODAL */}
-                            <div className="modal-actions" style={{ marginTop: '15px' }}>
+
+                            {/* =========================
+                                RECURSO
+                            ========================= */}
+
+                            <div>
+
+                                <label>
+                                    Buscar Recurso *
+                                </label>
+
+
+                                <input
+                                    type="text"
+
+                                    list="lista-recursos"
+
+                                    placeholder={
+                                        'Escribe título o código...'
+                                    }
+
+                                    value={
+                                        searchRecurso
+                                    }
+
+                                    onChange={
+                                        handleRecursoChange
+                                    }
+
+                                    autoComplete="off"
+
+                                    required
+
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px'
+                                    }}
+                                />
+
+
+                                <datalist
+                                    id="lista-recursos"
+                                >
+
+                                    {recursos.map(
+                                        recurso => (
+
+                                            <option
+                                                key={
+                                                    recurso.id
+                                                }
+
+                                                value={
+                                                    getRecursoOptionText(
+                                                        recurso
+                                                    )
+                                                }
+                                            />
+
+                                        )
+                                    )}
+
+                                </datalist>
+
+                            </div>
+
+
+                            {/* =========================
+                                DEVOLUCIÓN
+                            ========================= */}
+
+                            <div>
+
+                                <label>
+                                    Fecha de Devolución *
+                                </label>
+
+
+                                <input
+                                    type="date"
+
+                                    name={
+                                        'fecha_devolucion_prevista'
+                                    }
+
+                                    value={
+                                        form.fecha_devolucion_prevista
+                                    }
+
+                                    min={
+                                        getTodayLocalDate()
+                                    }
+
+                                    onChange={
+                                        handleChange
+                                    }
+
+                                    required
+
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px'
+                                    }}
+                                />
+
+                            </div>
+
+
+                            {/* =========================
+                                TIPO
+                            ========================= */}
+
+                            <div>
+
+                                <label>
+                                    Tipo de Préstamo *
+                                </label>
+
+
+                                <select
+                                    name={
+                                        'tipo_prestamo'
+                                    }
+
+                                    value={
+                                        form.tipo_prestamo
+                                    }
+
+                                    onChange={
+                                        handleChange
+                                    }
+
+                                    required
+
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px'
+                                    }}
+                                >
+
+                                    <option
+                                        value="DOMICILIO"
+                                    >
+                                        Domicilio
+                                    </option>
+
+                                    <option
+                                        value="SALA"
+                                    >
+                                        Sala
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            {/* =========================
+                                BOTONES
+                            ========================= */}
+
+                            <div
+                                className="modal-actions"
+                            >
+
                                 <button
                                     type="button"
+
                                     className="btn-cancel"
-                                    onClick={() => {
-                                        setIsModalOpen(false);
-                                        setSearchLector('');
-                                        setSearchRecurso('');
-                                    }}
+
+                                    onClick={
+                                        closeModal
+                                    }
+
+                                    disabled={
+                                        saving
+                                    }
                                 >
                                     Cancelar
                                 </button>
-                                <button type="submit">
-                                    Registrar Préstamo
+
+
+                                <button
+                                    type="submit"
+
+                                    disabled={
+                                        saving
+                                    }
+                                >
+                                    {
+                                        saving
+                                            ? 'Registrando...'
+                                            : 'Registrar Préstamo'
+                                    }
                                 </button>
+
                             </div>
+
                         </form>
+
                     </div>
+
                 </div>
             )}
+
         </div>
     );
 };
+
 
 export default PrestamosPage;
