@@ -1,17 +1,49 @@
 const API = 'http://localhost:3000/api/lectores';
 
+const getToken = () =>
+    localStorage.getItem('token') ||
+    localStorage.getItem('user_token') ||
+    localStorage.getItem('access_token');
+
+const authHeaders = () => {
+    const token = getToken();
+
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+};
+
 const handleResponse = async (res) => {
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || 'Error en la petición');
+    let data = null;
+
+    try {
+        data = await res.json();
+    } catch {
+        data = null;
     }
 
-    return res.json();
+    if (!res.ok) {
+        if (res.status === 401) {
+            throw new Error('Sesión no válida o expirada');
+        }
+
+        if (res.status === 403) {
+            throw new Error('No tiene permisos para realizar esta operación');
+        }
+
+        throw new Error(data?.error || 'Error en la petición');
+    }
+
+    return data;
 };
 
 // LISTAR
 export const getLectores = async () => {
-    const res = await fetch(API);
+    const res = await fetch(API, {
+        headers: authHeaders()
+    });
+
     return handleResponse(res);
 };
 
@@ -19,9 +51,7 @@ export const getLectores = async () => {
 export const createLector = async (lector) => {
     const res = await fetch(API, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: authHeaders(),
         body: JSON.stringify(lector)
     });
 
@@ -32,9 +62,7 @@ export const createLector = async (lector) => {
 export const updateLector = async (id, lector) => {
     const res = await fetch(`${API}/${id}`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: authHeaders(),
         body: JSON.stringify(lector)
     });
 
@@ -44,16 +72,27 @@ export const updateLector = async (id, lector) => {
 // ELIMINACIÓN FÍSICA
 export const deleteLector = async (id) => {
     const res = await fetch(`${API}/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: authHeaders()
     });
 
     return handleResponse(res);
 };
 
-// ELIMINACIÓN LÓGICA
+// CAMBIAR ACTIVO <-> SANCIONADO
 export const estadoLector = async (id) => {
     const res = await fetch(`${API}/estado/${id}`, {
-        method: 'PATCH'
+        method: 'PATCH',
+        headers: authHeaders()
+    });
+
+    return handleResponse(res);
+};
+
+// PERFIL DEL LECTOR AUTENTICADO
+export const getMiPerfil = async () => {
+    const res = await fetch(`${API}/mi-perfil`, {
+        headers: authHeaders()
     });
 
     return handleResponse(res);

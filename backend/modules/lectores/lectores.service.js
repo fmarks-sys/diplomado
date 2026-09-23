@@ -1,60 +1,61 @@
 import * as repo from './lectores.repository.js';
 
-// Listar
+const TIPOS_LECTOR = ['ESTUDIANTE', 'DOCENTE', 'EXTERNO'];
+
+const validarLector = (data) => {
+    if (!data.ci?.trim()) throw new Error('CI requerido');
+    if (!data.nombres?.trim()) throw new Error('Nombre requerido');
+    if (!data.ap?.trim()) throw new Error('Apellido paterno requerido');
+    if (!data.am?.trim()) throw new Error('Apellido materno requerido');
+    if (!data.correo?.trim()) throw new Error('Correo requerido');
+    if (!data.tipo_lector) throw new Error('Tipo de lector requerido');
+
+    if (!TIPOS_LECTOR.includes(data.tipo_lector)) {
+        throw new Error('Tipo de lector inválido');
+    }
+};
+
+const normalizarLector = (data) => ({
+    ru: data.ru?.trim() || null,
+    ci: data.ci.trim(),
+    nombres: data.nombres.trim(),
+    ap: data.ap.trim(),
+    am: data.am.trim(),
+    correo: data.correo.trim().toLowerCase(),
+    telefono: data.telefono?.trim() || null,
+    tipo_lector: data.tipo_lector
+});
+
 export const listLectores = async () => {
-    return await repo.getAllLectores();
+    return repo.getAllLectores();
 };
 
-// Crear
 export const addLector = async (data) => {
-
-    if (!data.ci) throw new Error('CI requerido');
-
-    if (!data.nombres) throw new Error('Nombre requerido');
-
-    if (!data.apellidos) throw new Error('Apellido requerido');
-
-    return await repo.createLector(
-        data.ru,
-        data.ci,
-        data.nombres,
-        data.apellidos,
-        data.correo,
-        data.telefono,
-        data.tipo_lector
-    );
+    validarLector(data);
+    return repo.createLector(normalizarLector(data));
 };
 
-// Actualizar
 export const editLector = async (id, data) => {
-
-    return await repo.updateLector(
-        id,
-        data.ru,
-        data.ci,
-        data.nombres,
-        data.apellidos,
-        data.correo,
-        data.telefono,
-        data.tipo_lector
-    );
+    validarLector(data);
+    return repo.updateLector(id, normalizarLector(data));
 };
 
-// Eliminar físico
 export const removeLector = async (id) => {
-    return await repo.deleteLector(id);
+    return repo.deleteLector(id);
 };
 
-// Eliminar lógico
-export const removeLectorLogico = async (id) => {
-    return await repo.disableLector(id);
+export const cambiarEstadoLector = async (id) => {
+    return repo.toggleEstadoLector(id);
 };
 
-//perfil
-export const getMiPerfil = async (usuario_id) => {
-    const perfil = await repo.getPerfilByUsuario(usuario_id);
+export const getMiPerfil = async (loginId) => {
+    const perfil = await repo.getPerfilByUsuario(loginId);
 
-    if (!perfil) throw new Error('Usuario no encontrado');
+    if (!perfil) {
+        const error = new Error('Usuario no encontrado');
+        error.status = 404;
+        throw error;
+    }
 
     return perfil;
 };

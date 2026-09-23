@@ -1,34 +1,51 @@
 import { useEffect, useState } from 'react';
-import { getLectores, createLector, updateLector, estadoLector } from '../../services/lectoresService';
+import {
+    getLectores,
+    createLector,
+    updateLector,
+    estadoLector
+} from '../../services/lectoresService';
 import './lectores.css';
+
+const initialForm = {
+    ru: '',
+    ci: '',
+    nombres: '',
+    ap: '',
+    am: '',
+    correo: '',
+    telefono: '',
+    tipo_lector: 'ESTUDIANTE'
+};
 
 function LectoresPage() {
     const [lectores, setLectores] = useState([]);
-
-    // 1. ESTADOS DE PAGINACIÓN
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    const [form, setForm] = useState({
-        ru: '',
-        ci: '',
-        nombres: '',
-        apellidos: '',
-        correo: '',
-        telefono: '',
-        tipo_lector: 'ESTUDIANTE'
-    });
-
-    // Estado para el modal de edición
+    const [form, setForm] = useState(initialForm);
     const [editModal, setEditModal] = useState({
         open: false,
         data: null
     });
 
+    //modal
+    const [addModal, setAddModal] = useState(false);
+
+    const openAddModal = () => {
+        setForm(initialForm);
+        setAddModal(true);
+    };
+
+    const closeAddModal = () => {
+        setAddModal(false);
+        setForm(initialForm);
+    };
+
     const loadLectores = async () => {
         try {
             const data = await getLectores();
-            setLectores(data);
+            setLectores(Array.isArray(data) ? data : []);
         } catch (err) {
             alert(err.message || 'Error al cargar lectores');
         }
@@ -38,13 +55,11 @@ function LectoresPage() {
         loadLectores();
     }, []);
 
-    // 2. CÁLCULOS DE PAGINACIÓN
     const totalPages = Math.ceil(lectores.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentLectores = lectores.slice(indexOfFirstItem, indexOfLastItem);
 
-    // Ajuste seguro de página al cambiar la cantidad de lectores
     useEffect(() => {
         if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(totalPages);
@@ -52,55 +67,62 @@ function LectoresPage() {
     }, [lectores.length, totalPages, currentPage]);
 
     const goToNextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+        if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
     };
 
     const goToPrevPage = () => {
-        if (currentPage > 1) setCurrentPage(prev => prev - 1);
+        if (currentPage > 1) setCurrentPage((prev) => prev - 1);
     };
 
     const handleChange = (e) => {
-        let { name, value, type } = e.target;
-        if (type === 'number' && value < 0) value = '';
+        const { name, value } = e.target;
 
-        setForm({
-            ...form,
+        setForm((prev) => ({
+            ...prev,
             [name]: value
-        });
+        }));
     };
 
     const handleEditChange = (e) => {
-        let { name, value, type } = e.target;
-        if (type === 'number' && value < 0) value = '';
+        const { name, value } = e.target;
 
-        setEditModal({
-            ...editModal,
+        setEditModal((prev) => ({
+            ...prev,
             data: {
-                ...editModal.data,
+                ...prev.data,
                 [name]: value
             }
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.ci || !form.nombres || !form.apellidos) {
-            alert('Complete los campos obligatorios (CI, Nombres, Apellidos)');
+
+        if (!form.ci.trim() || !form.nombres.trim() || !form.ap.trim() || !form.am.trim() || !form.correo.trim()) {
+            alert('Complete CI, nombres, apellido paterno, apellido materno y correo');
             return;
         }
 
         try {
-            await createLector(form);
-            setForm({
-                ru: '',
-                ci: '',
-                nombres: '',
-                apellidos: '',
-                correo: '',
-                telefono: '',
-                tipo_lector: 'ESTUDIANTE'
+            await createLector({
+                ...form,
+                ru: form.ru.trim() || null,
+                ci: form.ci.trim(),
+                nombres: form.nombres.trim(),
+                ap: form.ap.trim(),
+                am: form.am.trim(),
+                correo: form.correo.trim(),
+                telefono: form.telefono.trim() || null
             });
-            loadLectores();
+
+            setForm(initialForm);
+            setAddModal(false);
+            setCurrentPage(1);
+            await loadLectores();
+
+            setForm(initialForm);
+            setCurrentPage(1);
+            await loadLectores();
         } catch (err) {
             alert(err.message || 'Error al crear lector');
         }
@@ -109,21 +131,45 @@ function LectoresPage() {
     const handleToggleEstado = async (id) => {
         try {
             await estadoLector(id);
-            loadLectores();
+            await loadLectores();
         } catch (err) {
             alert(err.message || 'Error al cambiar el estado');
         }
     };
 
+    const openEditModal = (lector) => {
+        setEditModal({
+            open: true,
+            data: { ...lector }
+        });
+    };
+
+    const closeEditModal = () => {
+        setEditModal({ open: false, data: null });
+    };
+
     const handleSaveEdit = async () => {
-        if (!editModal.data.nombres || !editModal.data.apellidos) {
-            alert('Nombres y Apellidos son obligatorios');
+        const data = editModal.data;
+
+        if (!data?.ci?.trim() || !data?.nombres?.trim() || !data?.ap?.trim() || !data?.am?.trim() || !data?.correo?.trim()) {
+            alert('Complete CI, nombres, apellido paterno, apellido materno y correo');
             return;
         }
+
         try {
-            await updateLector(editModal.data.id, editModal.data);
-            setEditModal({ open: false, data: null });
-            loadLectores();
+            await updateLector(data.id, {
+                ru: data.ru?.trim() || null,
+                ci: data.ci.trim(),
+                nombres: data.nombres.trim(),
+                ap: data.ap.trim(),
+                am: data.am.trim(),
+                correo: data.correo.trim(),
+                telefono: data.telefono?.trim() || null,
+                tipo_lector: data.tipo_lector
+            });
+
+            closeEditModal();
+            await loadLectores();
         } catch (err) {
             alert(err.message || 'Error al actualizar lector');
         }
@@ -133,32 +179,12 @@ function LectoresPage() {
         <div className="lectores-page">
             <h2 className="lectores-title">Lectores</h2>
 
-            {/* FORMULARIO AGREGAR */}
-            <div className="lectores-form">
-                <form className="form-grid" onSubmit={handleSubmit}>
-                    <input name="ru" placeholder="RU" value={form.ru} onChange={handleChange} />
-                    <input name="ci" placeholder="CI" value={form.ci} onChange={handleChange} />
-                    <input name="nombres" placeholder="Nombres" value={form.nombres} onChange={handleChange} />
-                    <input name="apellidos" placeholder="Apellidos" value={form.apellidos} onChange={handleChange} />
-                    <input name="correo" type="email" placeholder="Correo" value={form.correo} onChange={handleChange} />
-                    <input
-                        name="telefono"
-                        type="number"
-                        onKeyDown={(e) => ['-', 'e', 'E'].includes(e.key) && e.preventDefault()}
-                        placeholder="Teléfono"
-                        value={form.telefono}
-                        onChange={handleChange}
-                    />
-                    <select name="tipo_lector" value={form.tipo_lector} onChange={handleChange}>
-                        <option value="ESTUDIANTE">Estudiante</option>
-                        <option value="DOCENTE">Docente</option>
-                        <option value="ADMINISTRATIVO">Administrativo</option>
-                    </select>
-                    <button type="submit">Guardar</button>
-                </form>
+            <div className="lectores-header-actions">
+                <button className="btn-add" onClick={openAddModal}>
+                    + Agregar lector
+                </button>
             </div>
 
-            {/* TABLA DE LECTORES */}
             <div className="lectores-table">
                 <table className="table">
                     <thead>
@@ -175,117 +201,302 @@ function LectoresPage() {
                             <th>Acciones</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        {currentLectores.map((lector) => (
-                            <tr key={lector.id}>
-                                <td>{lector.id}</td>
-                                <td>{lector.ru || '—'}</td>
-                                <td>{lector.ci}</td>
-                                <td>{lector.nombres}</td>
-                                <td>{lector.apellidos}</td>
-                                <td>{lector.correo || '—'}</td>
-                                <td>{lector.telefono || '—'}</td>
-                                <td>{lector.tipo_lector}</td>
-                                <td>
-                                    <span className={`badge ${lector.estado === 'ACTIVO' ? 'disponible' : 'prestado'}`}>
-                                        {lector.estado}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button
-                                        className="btn-toggle"
-                                        onClick={() => handleToggleEstado(lector.id)}
-                                        style={{ marginRight: '5px' }}
-                                    >
-                                        Estado
-                                    </button>
-                                    <button onClick={() => setEditModal({ open: true, data: lector })}>
-                                        Editar
-                                    </button>
+                        {currentLectores.length === 0 ? (
+                            <tr>
+                                <td colSpan="10" style={{ textAlign: 'center' }}>
+                                    No hay lectores registrados
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            currentLectores.map((lector) => (
+                                <tr key={lector.id}>
+                                    <td>{lector.id}</td>
+                                    <td>{lector.ru || '—'}</td>
+                                    <td>{lector.ci}</td>
+                                    <td>{lector.nombres}</td>
+                                    <td>{`${lector.ap || ''} ${lector.am || ''}`.trim() || '—'}</td>
+                                    <td>{lector.correo || '—'}</td>
+                                    <td>{lector.telefono || '—'}</td>
+                                    <td>{lector.tipo_lector}</td>
+                                    <td>
+                                        <span
+                                            className={`badge ${lector.estado === 'ACTIVO'
+                                                ? 'disponible'
+                                                : 'prestado'
+                                                }`}
+                                        >
+                                            {lector.estado}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button
+                                            className="btn-toggle"
+                                            onClick={() => handleToggleEstado(lector.id)}
+                                            style={{ marginRight: '5px' }}
+                                        >
+                                            {lector.estado === 'ACTIVO' ? 'Sancionar' : 'Activar'}
+                                        </button>
+
+                                        <button onClick={() => openEditModal(lector)}>
+                                            Editar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
 
-            {/* CONTROLES DE PAGINACIÓN */}
             {lectores.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
-                    <button className='btn-page'
-                        onClick={goToPrevPage} 
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginTop: '15px'
+                    }}
+                >
+                    <button
+                        className="btn-page"
+                        onClick={goToPrevPage}
                         disabled={currentPage === 1}
-                        style={{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', padding: '6px 12px' }}
                     >
                         Anterior
                     </button>
 
                     <span>
-                        Página <strong>{currentPage}</strong> de <strong>{totalPages || 1}</strong>
+                        Página <strong>{currentPage}</strong> de{' '}
+                        <strong>{totalPages || 1}</strong>
                     </span>
 
-                    <button className='btn-page'
-                        onClick={goToNextPage} 
+                    <button
+                        className="btn-page"
+                        onClick={goToNextPage}
                         disabled={currentPage === totalPages || totalPages === 0}
-                        style={{ opacity: (currentPage === totalPages || totalPages === 0) ? 0.5 : 1, cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer', padding: '6px 12px' }}
                     >
                         Siguiente
                     </button>
                 </div>
             )}
 
-            {/* MODAL DE EDICIÓN */}
+            {addModal && (
+                <div className="modal-overlay">
+                    <div className="modal-box">
+                        <h3>Agregar Lector</h3>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="modal-form">
+                                <div>
+                                    <label>RU:</label>
+                                    <input
+                                        name="ru"
+                                        placeholder="Registro universitario"
+                                        value={form.ru}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>CI:</label>
+                                    <input
+                                        name="ci"
+                                        placeholder="Cédula de identidad"
+                                        value={form.ci}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Nombres:</label>
+                                    <input
+                                        name="nombres"
+                                        placeholder="Nombres"
+                                        value={form.nombres}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Apellido paterno:</label>
+                                    <input
+                                        name="ap"
+                                        placeholder="Apellido paterno"
+                                        value={form.ap}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Apellido materno:</label>
+                                    <input
+                                        name="am"
+                                        placeholder="Apellido materno"
+                                        value={form.am}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Correo:</label>
+                                    <input
+                                        name="correo"
+                                        type="email"
+                                        placeholder="correo@ejemplo.com"
+                                        value={form.correo}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Teléfono:</label>
+                                    <input
+                                        name="telefono"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        placeholder="Teléfono"
+                                        value={form.telefono}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Tipo de lector:</label>
+                                    <select
+                                        name="tipo_lector"
+                                        value={form.tipo_lector}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="ESTUDIANTE">Estudiante</option>
+                                        <option value="DOCENTE">Docente</option>
+                                        <option value="EXTERNO">Externo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-cancel"
+                                    onClick={closeAddModal}
+                                >
+                                    Cancelar
+                                </button>
+
+                                <button type="submit">
+                                    Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {editModal.open && editModal.data && (
                 <div className="modal-overlay">
                     <div className="modal-box">
                         <h3>Editar Lector</h3>
-                        <div style={{ display: 'grid', gap: '12px', margin: '15px 0', textAlign: 'left' }}>
+
+                        <div
+                            style={{
+                                display: 'grid',
+                                gap: '12px',
+                                margin: '15px 0',
+                                textAlign: 'left'
+                            }}
+                        >
                             <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>RU (No editable):</label>
-                                <input value={editModal.data.ru || ''} disabled style={{ background: '#e2e8f0', cursor: 'not-allowed', width: '100%', padding: '8px' }} />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>CI (No editable):</label>
-                                <input value={editModal.data.ci || ''} disabled style={{ background: '#e2e8f0', cursor: 'not-allowed', width: '100%', padding: '8px' }} />
+                                <label>RU:</label>
+                                <input
+                                    name="ru"
+                                    value={editModal.data.ru || ''}
+                                    onChange={handleEditChange}
+                                />
                             </div>
 
                             <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Nombres:</label>
-                                <input name="nombres" value={editModal.data.nombres || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Apellidos:</label>
-                                <input name="apellidos" value={editModal.data.apellidos || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Correo:</label>
-                                <input name="correo" type="email" value={editModal.data.correo || ''} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }} />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Teléfono:</label>
+                                <label>CI:</label>
                                 <input
-                                    name="telefono"
-                                    type="number"
-                                    onKeyDown={(e) => ['-', 'e', 'E'].includes(e.key) && e.preventDefault()}
-                                    value={editModal.data.telefono || ''}
+                                    name="ci"
+                                    value={editModal.data.ci || ''}
                                     onChange={handleEditChange}
-                                    style={{ width: '100%', padding: '8px' }}
                                 />
                             </div>
+
                             <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Tipo Lector:</label>
-                                <select name="tipo_lector" value={editModal.data.tipo_lector} onChange={handleEditChange} style={{ width: '100%', padding: '8px' }}>
+                                <label>Nombres:</label>
+                                <input
+                                    name="nombres"
+                                    value={editModal.data.nombres || ''}
+                                    onChange={handleEditChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label>Apellido paterno:</label>
+                                <input
+                                    name="ap"
+                                    value={editModal.data.ap || ''}
+                                    onChange={handleEditChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label>Apellido materno:</label>
+                                <input
+                                    name="am"
+                                    value={editModal.data.am || ''}
+                                    onChange={handleEditChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label>Correo:</label>
+                                <input
+                                    name="correo"
+                                    type="email"
+                                    value={editModal.data.correo || ''}
+                                    onChange={handleEditChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label>Teléfono:</label>
+                                <input
+                                    name="telefono"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    value={editModal.data.telefono || ''}
+                                    onChange={handleEditChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label>Tipo Lector:</label>
+                                <select
+                                    name="tipo_lector"
+                                    value={editModal.data.tipo_lector}
+                                    onChange={handleEditChange}
+                                >
                                     <option value="ESTUDIANTE">Estudiante</option>
                                     <option value="DOCENTE">Docente</option>
-                                    <option value="ADMINISTRATIVO">Administrativo</option>
+                                    <option value="EXTERNO">Externo</option>
                                 </select>
                             </div>
                         </div>
 
                         <div className="modal-actions">
-                            <button className="btn-cancel" onClick={() => setEditModal({ open: false, data: null })}>
+                            <button className="btn-cancel" onClick={closeEditModal}>
                                 Cancelar
                             </button>
+
                             <button onClick={handleSaveEdit}>
                                 Guardar
                             </button>
