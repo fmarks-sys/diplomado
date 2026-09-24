@@ -1,4 +1,4 @@
-const API_URL = `${import.meta.env.VITE_API_URL}/api/recursos`;
+const API = `${import.meta.env.VITE_API_URL}/api/recursos`;
 
 const handleResponse = async (res) => {
     const contentType = res.headers.get('content-type') || '';
