@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api/recursos';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/recursos`;
 
 const handleResponse = async (res) => {
     const contentType = res.headers.get('content-type') || '';

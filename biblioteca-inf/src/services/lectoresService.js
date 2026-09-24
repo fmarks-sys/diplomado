@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api/lectores';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/lectores`;
 
 const getToken = () =>
     localStorage.getItem('token') ||
