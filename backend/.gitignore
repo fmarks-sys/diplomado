@@ -21,6 +21,3 @@ build/
 .vscode/
 .idea/
 *.suo
-
-# Ignorar archivo de conexión por credenciales hardcodeadas
-db.js
