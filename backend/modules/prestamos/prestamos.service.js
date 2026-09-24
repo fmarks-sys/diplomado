@@ -131,13 +131,13 @@ export const addPrestamo = async (data) => {
 
     if (
         fechaValidacion.getFullYear()
-            !== anioFecha ||
+        !== anioFecha ||
 
         fechaValidacion.getMonth()
-            !== mesFecha - 1 ||
+        !== mesFecha - 1 ||
 
         fechaValidacion.getDate()
-            !== diaFecha
+        !== diaFecha
     ) {
 
         throw new Error(
