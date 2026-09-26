@@ -1,12 +1,9 @@
 import bcrypt from 'bcryptjs';
 
-import * as repository
-    from './usuarios.repository.js';
+import * as repository from './usuarios.repository.js';
 
 
-// ======================================================
 // LISTAR
-// ======================================================
 
 export const getAll = async () => {
 
@@ -14,9 +11,7 @@ export const getAll = async () => {
 };
 
 
-// ======================================================
 // OBTENER UNO
-// ======================================================
 
 export const getById = async (id) => {
 
@@ -30,10 +25,8 @@ export const getById = async (id) => {
 };
 
 
-// ======================================================
 // CREAR USUARIO NUEVO
 // Persona todavía NO existe.
-// ======================================================
 
 export const create = async (data) => {
 
@@ -102,9 +95,7 @@ export const create = async (data) => {
 };
 
 
-// ======================================================
 // CREAR USUARIO DESDE PERSONA/LECTOR EXISTENTE
-// ======================================================
 
 export const createFromPerson = async (
     personaId,
@@ -183,9 +174,7 @@ export const createFromPerson = async (
 };
 
 
-// ======================================================
 // MODIFICAR
-// ======================================================
 
 export const update = async (
     id,
@@ -243,9 +232,7 @@ export const update = async (
 };
 
 
-// ======================================================
 // CAMBIAR PASSWORD
-// ======================================================
 
 export const changePassword = async (
     id,
@@ -288,9 +275,7 @@ export const changePassword = async (
 };
 
 
-// ======================================================
 // CAMBIAR ESTADO
-// ======================================================
 
 export const changeStatus = async (
     id,

@@ -1,25 +1,18 @@
 import * as repo from './areas.repository.js';
 
-
-// ======================================================
 // LISTAR TODAS LAS ÁREAS
-// ======================================================
 export const listAreas = async () => {
     return await repo.getAllAreas();
 };
 
 
-// ======================================================
 // LISTAR SOLO ÁREAS ACTIVAS
-// ======================================================
 export const listAreasActivas = async () => {
     return await repo.getAllAreasActivas();
 };
 
 
-// ======================================================
 // CREAR ÁREA
-// ======================================================
 export const addArea = async (nombre) => {
 
     if (!nombre || !nombre.trim()) {
@@ -45,10 +38,7 @@ export const addArea = async (nombre) => {
     }
 };
 
-
-// ======================================================
 // ACTUALIZAR ÁREA
-// ======================================================
 export const editArea = async (id, nombre) => {
 
     if (!id || isNaN(Number(id))) {
@@ -81,7 +71,7 @@ export const editArea = async (id, nombre) => {
 
         // PostgreSQL: unique_violation
         if (error.code === '23505') {
-            throw new Error('Ya existe un área con ese nombre');
+            throw new Error('Ya existe un area con ese nombre');
         }
 
         throw error;
@@ -89,10 +79,8 @@ export const editArea = async (id, nombre) => {
 };
 
 
-// ======================================================
 // CAMBIAR ESTADO
 // ACTIVO <-> INACTIVO
-// ======================================================
 export const changeAreaEstado = async (id) => {
 
     if (!id || isNaN(Number(id))) {

@@ -16,9 +16,7 @@ import {
 const router = express.Router();
 
 
-// ======================================================
 // RUTAS DEL BIBLIOTECARIO
-// ======================================================
 
 // Listar todos los préstamos
 router.get(
@@ -47,10 +45,7 @@ router.patch(
 );
 
 
-// ======================================================
 // RUTAS DEL LECTOR
-// ======================================================
-
 // Consultar préstamos propios
 router.get(
     '/mis-prestamos',

@@ -1,9 +1,7 @@
 import { pool } from '../../config/db.js';
 
 
-// ==========================================
 // BUSCAR LOGIN POR USERNAME
-// ==========================================
 
 export const findUserByUsername = async (username) => {
 
@@ -46,9 +44,7 @@ export const findUserByUsername = async (username) => {
 };
 
 
-// ==========================================
 // BUSCAR PERSONA POR CORREO
-// ==========================================
 
 export const findPersonByEmail = async (correo) => {
 
@@ -66,9 +62,7 @@ export const findPersonByEmail = async (correo) => {
 };
 
 
-// ==========================================
 // BUSCAR PERSONA POR CI
-// ==========================================
 
 export const findPersonByCi = async (ci) => {
 
@@ -86,9 +80,7 @@ export const findPersonByCi = async (ci) => {
 };
 
 
-// ==========================================
 // BUSCAR ROL
-// ==========================================
 
 export const findRoleByName = async (client, rol) => {
 
@@ -106,10 +98,7 @@ export const findRoleByName = async (client, rol) => {
 };
 
 
-// ==========================================
 // CREAR PERSONA + LOGIN
-// ==========================================
-
 export const createUser = async (data) => {
 
     const client = await pool.connect();
@@ -119,9 +108,7 @@ export const createUser = async (data) => {
         await client.query('BEGIN');
 
 
-        // ----------------------------------
         // 1. Buscar rol
-        // ----------------------------------
 
         const role = await findRoleByName(
             client,
@@ -137,9 +124,7 @@ export const createUser = async (data) => {
         }
 
 
-        // ----------------------------------
         // 2. Crear persona
-        // ----------------------------------
 
         const personaResult = await client.query(
             `
@@ -167,9 +152,7 @@ export const createUser = async (data) => {
         const persona = personaResult.rows[0];
 
 
-        // ----------------------------------
         // 3. Crear login
-        // ----------------------------------
 
         const loginResult = await client.query(
             `
@@ -224,9 +207,7 @@ export const createUser = async (data) => {
 };
 
 
-// ==========================================
 // CREAR LOGIN PARA PERSONA EXISTENTE
-// ==========================================
 
 export const createLoginForPerson = async (
     personaId,
@@ -299,9 +280,7 @@ export const createLoginForPerson = async (
 };
 
 
-// ==========================================
 // ACTUALIZAR ÚLTIMO ACCESO
-// ==========================================
 
 export const updateLastAccess = async (loginId) => {
 

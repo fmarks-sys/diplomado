@@ -1,10 +1,8 @@
 import * as service from './areas.service.js';
 
 
-// ======================================================
+
 // LISTAR TODAS LAS ÁREAS
-// GET /api/areas
-// ======================================================
 export const getAreas = async (req, res) => {
     try {
 
@@ -23,10 +21,7 @@ export const getAreas = async (req, res) => {
 };
 
 
-// ======================================================
 // LISTAR SOLO ÁREAS ACTIVAS
-// GET /api/areas/activas
-// ======================================================
 export const getAreasActivas = async (req, res) => {
     try {
 
@@ -45,10 +40,7 @@ export const getAreasActivas = async (req, res) => {
 };
 
 
-// ======================================================
 // CREAR ÁREA
-// POST /api/areas
-// ======================================================
 export const crearArea = async (req, res) => {
     try {
 
@@ -67,10 +59,7 @@ export const crearArea = async (req, res) => {
 };
 
 
-// ======================================================
 // ACTUALIZAR ÁREA
-// PUT /api/areas/:id
-// ======================================================
 export const updateArea = async (req, res) => {
     try {
 
@@ -98,10 +87,7 @@ export const updateArea = async (req, res) => {
 };
 
 
-// ======================================================
 // CAMBIAR ESTADO DEL ÁREA
-// PATCH /api/areas/:id/estado
-// ======================================================
 export const cambiarEstadoArea = async (req, res) => {
     try {
 

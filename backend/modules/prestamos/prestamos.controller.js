@@ -1,9 +1,6 @@
 import * as service from './prestamos.service.js';
 
-
-// ======================================================
 // GET - LISTAR TODOS LOS PRÉSTAMOS
-// ======================================================
 export const getPrestamos = async (
     req,
     res
@@ -38,9 +35,7 @@ export const getPrestamos = async (
 };
 
 
-// ======================================================
 // POST - CREAR PRÉSTAMO
-// ======================================================
 export const crearPrestamo = async (
     req,
     res
@@ -83,9 +78,7 @@ export const crearPrestamo = async (
 };
 
 
-// ======================================================
 // PATCH - DEVOLVER PRÉSTAMO
-// ======================================================
 export const devolver = async (
     req,
     res
@@ -128,9 +121,7 @@ export const devolver = async (
 };
 
 
-// ======================================================
 // GET - MIS PRÉSTAMOS
-// ======================================================
 export const getMisPrestamos = async (
     req,
     res
@@ -194,9 +185,7 @@ export const getMisPrestamos = async (
 };
 
 
-// ======================================================
 // GET - MIS ALERTAS
-// ======================================================
 export const getMisAlertas = async (
     req,
     res

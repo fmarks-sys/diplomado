@@ -4,16 +4,11 @@ import * as controller from './areas.controller.js';
 const router = express.Router();
 
 
-// ======================================================
-// ÁREAS / MENCIONES
-// ======================================================
-
 // Listar todas
 router.get('/', controller.getAreas);
 
 // Listar únicamente activas
 // IMPORTANTE: debe ir antes de /:id si posteriormente
-// agregamos GET /:id
 router.get('/activas', controller.getAreasActivas);
 
 // Crear

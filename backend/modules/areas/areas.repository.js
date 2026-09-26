@@ -1,9 +1,6 @@
 import { pool } from '../../config/db.js';
 
-// ======================================================
 // LISTAR TODAS LAS ÁREAS
-// Uso: módulo administrativo
-// ======================================================
 export const getAllAreas = async () => {
     const result = await pool.query(
         `SELECT id, nombre, estado
@@ -15,10 +12,7 @@ export const getAllAreas = async () => {
 };
 
 
-// ======================================================
 // LISTAR SOLO ÁREAS ACTIVAS
-// Uso: selects de libros, tesis y recursos
-// ======================================================
 export const getAllAreasActivas = async () => {
     const result = await pool.query(
         `SELECT id, nombre, estado
@@ -31,9 +25,7 @@ export const getAllAreasActivas = async () => {
 };
 
 
-// ======================================================
 // BUSCAR ÁREA POR ID
-// ======================================================
 export const getAreaById = async (id) => {
     const result = await pool.query(
         `SELECT id, nombre, estado
@@ -46,9 +38,7 @@ export const getAreaById = async (id) => {
 };
 
 
-// ======================================================
 // CREAR ÁREA
-// ======================================================
 export const createArea = async (nombre) => {
     const result = await pool.query(
         `INSERT INTO areas_menciones (nombre)
@@ -61,9 +51,7 @@ export const createArea = async (nombre) => {
 };
 
 
-// ======================================================
 // ACTUALIZAR ÁREA
-// ======================================================
 export const updateArea = async (id, nombre) => {
     const result = await pool.query(
         `UPDATE areas_menciones
@@ -77,10 +65,7 @@ export const updateArea = async (id, nombre) => {
 };
 
 
-// ======================================================
 // CAMBIAR ESTADO
-// ACTIVO <-> INACTIVO
-// ======================================================
 export const toggleAreaEstado = async (id) => {
     const result = await pool.query(
         `UPDATE areas_menciones

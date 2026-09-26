@@ -1,9 +1,7 @@
 import { pool } from '../../config/db.js';
 
 
-// ======================================================
 // LISTAR USUARIOS
-// ======================================================
 
 export const findAll = async () => {
 
@@ -49,9 +47,7 @@ export const findAll = async () => {
 };
 
 
-// ======================================================
 // BUSCAR USUARIO POR LOGIN ID
-// ======================================================
 
 export const findById = async (id) => {
 
@@ -100,10 +96,8 @@ export const findById = async (id) => {
 };
 
 
-// ======================================================
 // BUSCAR PERSONA
 // Sirve para convertir un lector existente en usuario.
-// ======================================================
 
 export const findPersonById = async (personaId) => {
 
@@ -161,9 +155,7 @@ export const findPersonByEmail = async (correo) => {
 };
 
 
-// ======================================================
 // VERIFICAR LOGIN DE PERSONA
-// ======================================================
 
 export const findLoginByPersonId = async (personaId) => {
 
@@ -180,9 +172,7 @@ export const findLoginByPersonId = async (personaId) => {
 };
 
 
-// ======================================================
 // VERIFICAR USERNAME
-// ======================================================
 
 export const findByUsername = async (username) => {
 
@@ -199,9 +189,7 @@ export const findByUsername = async (username) => {
 };
 
 
-// ======================================================
 // BUSCAR ROL
-// ======================================================
 
 export const findRoleById = async (client, rolId) => {
 
@@ -218,9 +206,7 @@ export const findRoleById = async (client, rolId) => {
 };
 
 
-// ======================================================
 // CREAR PERSONA NUEVA + LOGIN
-// ======================================================
 
 export const createNewUser = async (data) => {
 
@@ -326,9 +312,7 @@ export const createNewUser = async (data) => {
 };
 
 
-// ======================================================
 // CREAR LOGIN PARA PERSONA EXISTENTE
-// ======================================================
 
 export const createLoginForExistingPerson = async (
     personaId,
@@ -401,9 +385,7 @@ export const createLoginForExistingPerson = async (
 };
 
 
-// ======================================================
 // MODIFICAR USUARIO
-// ======================================================
 
 export const updateUser = async (loginId, data) => {
 
@@ -493,9 +475,7 @@ export const updateUser = async (loginId, data) => {
 };
 
 
-// ======================================================
 // CAMBIAR PASSWORD
-// ======================================================
 
 export const updatePassword = async (
     loginId,
@@ -519,10 +499,7 @@ export const updatePassword = async (
 };
 
 
-// ======================================================
 // CAMBIAR ESTADO
-// ======================================================
-
 export const updateStatus = async (
     loginId,
     estado

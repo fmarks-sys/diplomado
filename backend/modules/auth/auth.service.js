@@ -11,9 +11,7 @@ import {
 } from './auth.repository.js';
 
 
-// ==========================================
 // REGISTRAR USUARIO DEL SISTEMA
-// ==========================================
 
 export const register = async (data) => {
 
@@ -31,9 +29,7 @@ export const register = async (data) => {
     }
 
 
-    // --------------------------------------
     // Validar rol
-    // --------------------------------------
 
     const rol = data.rol.toUpperCase();
 
@@ -47,9 +43,7 @@ export const register = async (data) => {
     }
 
 
-    // --------------------------------------
     // Verificar username
-    // --------------------------------------
 
     const existingUsername =
         await findUserByUsername(data.username);
@@ -61,9 +55,7 @@ export const register = async (data) => {
     }
 
 
-    // --------------------------------------
     // Verificar si persona ya existe
-    // --------------------------------------
 
     const personaByCi =
         await findPersonByCi(data.ci);
@@ -90,10 +82,8 @@ export const register = async (data) => {
         }
 
 
-        // ----------------------------------
         // Persona existente
         // Crear solamente LOGIN
-        // ----------------------------------
 
         const hashedPassword =
             await bcrypt.hash(data.password, 10);
@@ -115,10 +105,7 @@ export const register = async (data) => {
         };
     }
 
-
-    // --------------------------------------
     // Persona nueva
-    // --------------------------------------
 
     const hashedPassword =
         await bcrypt.hash(data.password, 10);
@@ -144,9 +131,7 @@ export const register = async (data) => {
 };
 
 
-// ==========================================
 // LOGIN
-// ==========================================
 
 export const login = async (
     username,
@@ -161,9 +146,7 @@ export const login = async (
     }
 
 
-    // --------------------------------------
     // Buscar exclusivamente en LOGIN
-    // --------------------------------------
 
     const user =
         await findUserByUsername(username);
@@ -177,9 +160,7 @@ export const login = async (
     }
 
 
-    // --------------------------------------
     // Estado
-    // --------------------------------------
 
     if (user.estado_login !== 'ACTIVO') {
 
@@ -195,10 +176,7 @@ export const login = async (
         );
     }
 
-
-    // --------------------------------------
     // Password
-    // --------------------------------------
 
     const validPassword =
         await bcrypt.compare(
@@ -215,9 +193,7 @@ export const login = async (
     }
 
 
-    // --------------------------------------
     // JWT
-    // --------------------------------------
 
     const token = jwt.sign(
         {
@@ -232,9 +208,7 @@ export const login = async (
     );
 
 
-    // --------------------------------------
     // Último acceso
-    // --------------------------------------
 
     await updateLastAccess(
         user.login_id

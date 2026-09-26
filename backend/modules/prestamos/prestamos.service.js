@@ -1,9 +1,7 @@
 import * as repo from './prestamos.repository.js';
 
 
-// ======================================================
 // LISTAR TODOS LOS PRÉSTAMOS
-// ======================================================
 export const listPrestamos = async () => {
 
     // Actualizar automáticamente préstamos vencidos
@@ -13,9 +11,7 @@ export const listPrestamos = async () => {
 };
 
 
-// ======================================================
 // CREAR PRÉSTAMO
-// ======================================================
 export const addPrestamo = async (data) => {
 
     const {
@@ -25,10 +21,7 @@ export const addPrestamo = async (data) => {
         tipo_prestamo
     } = data;
 
-
-    // ==================================================
     // 1. CAMPOS OBLIGATORIOS
-    // ==================================================
     if (
         lector_id === undefined ||
         lector_id === null ||
@@ -43,9 +36,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 2. VALIDAR IDs
-    // ==================================================
     const lectorId = Number(lector_id);
     const recursoId = Number(recurso_id);
 
@@ -72,9 +63,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 3. VALIDAR TIPO DE PRÉSTAMO
-    // ==================================================
     const tipoPrestamo = String(
         tipo_prestamo || 'DOMICILIO'
     )
@@ -93,9 +82,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 4. VALIDAR FECHA
-    // ==================================================
     const fechaRegex =
         /^\d{4}-\d{2}-\d{2}$/;
 
@@ -146,9 +133,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // Obtener fecha actual local en YYYY-MM-DD
-    // ==================================================
     const hoy = new Date();
 
     const anio =
@@ -182,9 +167,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 5. VALIDAR LECTOR
-    // ==================================================
     const lector =
         await repo.getLectorById(
             lectorId
@@ -210,9 +193,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 6. VALIDAR RECURSO
-    // ==================================================
     const recurso =
         await repo.getRecursoById(
             recursoId
@@ -226,10 +207,7 @@ export const addPrestamo = async (data) => {
         );
     }
 
-
-    // ==================================================
     // 7. VALIDAR ESTADO DEL RECURSO
-    // ==================================================
     if (
         recurso.estado !== 'DISPONIBLE'
     ) {
@@ -240,9 +218,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 8. REGLA PARA TESIS
-    // ==================================================
     if (
         recurso.tipo_recurso === 'TESIS' &&
         tipoPrestamo !== 'SALA'
@@ -254,12 +230,10 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 9. VALIDACIÓN PRELIMINAR DE STOCK
     //
     // Repository vuelve a comprobarlo dentro de la
     // transacción para evitar problemas de concurrencia.
-    // ==================================================
     if (
         Number(
             recurso.cantidad_disponible
@@ -272,9 +246,7 @@ export const addPrestamo = async (data) => {
     }
 
 
-    // ==================================================
     // 10. CREAR PRÉSTAMO
-    // ==================================================
     return await repo.executeCreatePrestamoTx(
         lectorId,
         recursoId,
@@ -284,9 +256,7 @@ export const addPrestamo = async (data) => {
 };
 
 
-// ======================================================
 // DEVOLVER PRÉSTAMO
-// ======================================================
 export const devolverPrestamo = async (id) => {
 
     const prestamoId = Number(id);
@@ -309,9 +279,7 @@ export const devolverPrestamo = async (id) => {
 };
 
 
-// ======================================================
 // MIS PRÉSTAMOS
-// ======================================================
 export const listMisPrestamos = async (
     personaId
 ) => {
@@ -339,9 +307,7 @@ export const listMisPrestamos = async (
 };
 
 
-// ======================================================
 // MIS ALERTAS
-// ======================================================
 export const listMisAlertas = async (
     personaId
 ) => {

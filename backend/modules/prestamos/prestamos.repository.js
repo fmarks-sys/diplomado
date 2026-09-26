@@ -1,9 +1,6 @@
 import { pool } from '../../config/db.js';
 
-
-// ======================================================
 // LISTAR TODOS LOS PRÉSTAMOS
-// ======================================================
 export const getAllPrestamos = async () => {
 
     const result = await pool.query(`
@@ -42,9 +39,7 @@ export const getAllPrestamos = async () => {
 };
 
 
-// ======================================================
 // OBTENER RECURSO POR ID
-// ======================================================
 export const getRecursoById = async (id) => {
 
     const result = await pool.query(
@@ -60,9 +55,7 @@ export const getRecursoById = async (id) => {
 };
 
 
-// ======================================================
 // OBTENER LECTOR POR ID
-// ======================================================
 export const getLectorById = async (id) => {
 
     const result = await pool.query(
@@ -78,9 +71,7 @@ export const getLectorById = async (id) => {
 };
 
 
-// ======================================================
 // ACTUALIZAR PRÉSTAMOS VENCIDOS
-// ======================================================
 export const updateVencidos = async () => {
 
     await pool.query(`
@@ -92,9 +83,7 @@ export const updateVencidos = async () => {
 };
 
 
-// ======================================================
 // CREAR PRÉSTAMO CON TRANSACCIÓN
-// ======================================================
 export const executeCreatePrestamoTx = async (
     lectorId,
     recursoId,
@@ -109,10 +98,8 @@ export const executeCreatePrestamoTx = async (
         await client.query('BEGIN');
 
 
-        // ==================================================
         // 1. Verificar que el lector no tenga actualmente
         //    el mismo recurso prestado.
-        // ==================================================
         const prestamoActivo = await client.query(
             `
             SELECT id
@@ -133,10 +120,7 @@ export const executeCreatePrestamoTx = async (
             );
         }
 
-
-        // ==================================================
         // 2. Descontar stock de forma atómica
-        // ==================================================
         const stockResult = await client.query(
             `
             UPDATE recursos
@@ -164,9 +148,7 @@ export const executeCreatePrestamoTx = async (
         }
 
 
-        // ==================================================
         // 3. Registrar préstamo
-        // ==================================================
         const prestamoResult = await client.query(
             `
             INSERT INTO prestamos (
@@ -209,9 +191,7 @@ export const executeCreatePrestamoTx = async (
 };
 
 
-// ======================================================
 // DEVOLVER PRÉSTAMO CON TRANSACCIÓN
-// ======================================================
 export const executeDevolucionTx = async (prestamoId) => {
 
     const client = await pool.connect();
@@ -221,9 +201,7 @@ export const executeDevolucionTx = async (prestamoId) => {
         await client.query('BEGIN');
 
 
-        // ==================================================
         // 1. Marcar préstamo como DEVUELTO
-        // ==================================================
         const prestamoResult = await client.query(
             `
             UPDATE prestamos
@@ -251,10 +229,7 @@ export const executeDevolucionTx = async (prestamoId) => {
 
         const prestamo = prestamoResult.rows[0];
 
-
-        // ==================================================
         // 2. Recuperar stock del recurso
-        // ==================================================
         const recursoResult = await client.query(
             `
             UPDATE recursos
@@ -298,9 +273,7 @@ export const executeDevolucionTx = async (prestamoId) => {
 };
 
 
-// ======================================================
 // PRÉSTAMOS DEL LECTOR AUTENTICADO
-// ======================================================
 //
 // El JWT proporciona personaId.
 //
@@ -312,7 +285,6 @@ export const executeDevolucionTx = async (prestamoId) => {
 //    ↓
 // prestamos.lector_id
 //
-// ======================================================
 export const getPrestamosByPersona = async (personaId) => {
 
     const result = await pool.query(
@@ -343,9 +315,7 @@ export const getPrestamosByPersona = async (personaId) => {
 };
 
 
-// ======================================================
 // ALERTAS DEL LECTOR AUTENTICADO
-// ======================================================
 export const getAlertasByPersona = async (personaId) => {
 
     const result = await pool.query(
