@@ -1,17 +1,11 @@
 const API = `${import.meta.env.VITE_API_URL}/api/prestamos`;
 
-
-// ======================================================
 // OBTENER TOKEN
-// ======================================================
 const getToken = () => {
     return localStorage.getItem('token');
 };
 
-
-// ======================================================
 // HEADERS AUTENTICADOS
-// ======================================================
 const getAuthHeaders = () => {
 
     const token = getToken();
@@ -23,9 +17,7 @@ const getAuthHeaders = () => {
 };
 
 
-// ======================================================
 // PROCESAR RESPUESTA
-// ======================================================
 const handleResponse = async (res) => {
 
     let data = null;
@@ -62,11 +54,8 @@ const handleResponse = async (res) => {
     return data;
 };
 
-
-// ======================================================
 // LISTAR TODOS LOS PRÉSTAMOS
 // BIBLIOTECARIO
-// ======================================================
 export const getPrestamos = async () => {
 
     const res = await fetch(API, {
@@ -78,10 +67,7 @@ export const getPrestamos = async () => {
 };
 
 
-// ======================================================
 // CREAR PRÉSTAMO
-// BIBLIOTECARIO
-// ======================================================
 export const createPrestamo = async (data) => {
 
     const res = await fetch(API, {
@@ -95,11 +81,8 @@ export const createPrestamo = async (data) => {
     return await handleResponse(res);
 };
 
-
-// ======================================================
 // DEVOLVER PRÉSTAMO
 // BIBLIOTECARIO
-// ======================================================
 export const devolverPrestamo = async (id) => {
 
     const res = await fetch(
@@ -114,10 +97,8 @@ export const devolverPrestamo = async (id) => {
 };
 
 
-// ======================================================
 // MIS PRÉSTAMOS
 // LECTOR
-// ======================================================
 export const getMisPrestamos = async () => {
 
     const res = await fetch(
@@ -132,10 +113,8 @@ export const getMisPrestamos = async () => {
 };
 
 
-// ======================================================
 // MIS ALERTAS
 // LECTOR
-// ======================================================
 export const getMisAlertas = async () => {
 
     const res = await fetch(

@@ -3,7 +3,6 @@ const API = `${import.meta.env.VITE_API_URL}/api/areas`;
 
 // ======================================================
 // MANEJO GENERAL DE RESPUESTAS
-// ======================================================
 const handleResponse = async (res) => {
 
     if (!res.ok) {
@@ -28,12 +27,8 @@ const handleResponse = async (res) => {
     return res.json();
 };
 
-
-// ======================================================
 // LISTAR TODAS LAS ÁREAS
-// Administración
 // GET /api/areas
-// ======================================================
 export const getAreas = async () => {
 
     const res = await fetch(API);
@@ -42,11 +37,8 @@ export const getAreas = async () => {
 };
 
 
-// ======================================================
 // LISTAR SOLO ÁREAS ACTIVAS
 // Selects de recursos, libros, tesis, etc.
-// GET /api/areas/activas
-// ======================================================
 export const getAreasActivas = async () => {
 
     const res = await fetch(`${API}/activas`);
@@ -54,11 +46,7 @@ export const getAreasActivas = async () => {
     return handleResponse(res);
 };
 
-
-// ======================================================
 // CREAR ÁREA
-// POST /api/areas
-// ======================================================
 export const createArea = async (nombre) => {
 
     if (!nombre || !nombre.trim()) {
@@ -81,10 +69,7 @@ export const createArea = async (nombre) => {
 };
 
 
-// ======================================================
 // ACTUALIZAR ÁREA
-// PUT /api/areas/:id
-// ======================================================
 export const modArea = async (id, nombre) => {
 
     if (!id) {
@@ -111,11 +96,7 @@ export const modArea = async (id, nombre) => {
 };
 
 
-// ======================================================
 // CAMBIAR ESTADO
-// ACTIVO <-> INACTIVO
-// PATCH /api/areas/:id/estado
-// ======================================================
 export const cambiarEstadoArea = async (id) => {
 
     if (!id) {
