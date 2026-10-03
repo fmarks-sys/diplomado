@@ -1,8 +1,16 @@
 import express from 'express';
 import * as controller from './areas.controller.js';
 
+import { verifyToken } from '../../middlewares/authMiddleware.js';
+import { isAdmin } from '../../middlewares/rolMiddleware.js';
+
 const router = express.Router();
 
+// Todas las rutas requieren bibliotecario
+router.use(
+    verifyToken,
+    isAdmin
+);
 
 // Listar todas
 router.get('/', controller.getAreas);

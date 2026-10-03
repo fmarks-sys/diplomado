@@ -219,7 +219,10 @@ export const login = async (
 
 
     return {
-        token,
-        user
-    };
+    token,
+    user: {
+        username: user.username,
+        rol: user.rol
+    }
+};
 };

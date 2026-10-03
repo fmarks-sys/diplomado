@@ -4,7 +4,6 @@ import { pool } from '../../config/db.js';
 // BUSCAR LOGIN POR USERNAME
 
 export const findUserByUsername = async (username) => {
-
     const result = await pool.query(
         `
         SELECT
@@ -12,29 +11,15 @@ export const findUserByUsername = async (username) => {
             l.username,
             l.password_hash,
             l.estado AS estado_login,
-            l.ultimo_acceso,
-
             p.id AS persona_id,
-            p.ci,
             p.nombres,
-            p.ap,
-            p.am,
-            p.correo,
-            p.telefono,
-
-            r.id AS rol_id,
             r.nombre AS rol
 
         FROM login l
-
-        INNER JOIN personas p
-            ON p.id = l.persona_id
-
-        INNER JOIN roles r
-            ON r.id = l.rol_id
+        INNER JOIN personas p ON p.id = l.persona_id
+        INNER JOIN roles r ON r.id = l.rol_id
 
         WHERE LOWER(l.username) = LOWER($1)
-
         LIMIT 1
         `,
         [username]
@@ -42,7 +27,6 @@ export const findUserByUsername = async (username) => {
 
     return result.rows[0];
 };
-
 
 // BUSCAR PERSONA POR CORREO
 

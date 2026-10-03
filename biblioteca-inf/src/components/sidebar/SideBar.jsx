@@ -4,58 +4,98 @@ import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import HomeIcon from '@mui/icons-material/Home';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+
+import { useAuth } from '../../context/AuthContext';
+
 import './sideBar.css';
 
+const opciones = [
+    {
+        to: '/dashboard',
+        texto: 'Inicio',
+        Icono: HomeIcon,
+        roles: ['BIBLIOTECARIO', 'LECTOR'],
+        end: true
+    },
+    {
+        to: '/dashboard/usuarios',
+        texto: 'Usuarios',
+        Icono: PeopleIcon,
+        roles: ['BIBLIOTECARIO']
+    },
+    {
+        to: '/dashboard/areas',
+        texto: 'Áreas',
+        Icono: CategoryIcon,
+        roles: ['BIBLIOTECARIO']
+    },
+    {
+        to: '/dashboard/recursos',
+        texto: 'Recursos',
+        Icono: MenuBookIcon,
+        roles: ['BIBLIOTECARIO']
+    },
+    {
+        to: '/dashboard/lectores',
+        texto: 'Lectores',
+        Icono: PeopleIcon,
+        roles: ['BIBLIOTECARIO']
+    },
+    {
+        to: '/dashboard/prestamos',
+        texto: 'Préstamos',
+        Icono: AssignmentIcon,
+        roles: ['BIBLIOTECARIO']
+    },
+    {
+        to: '/dashboard/catalogo',
+        texto: 'Buscar recursos',
+        Icono: MenuBookIcon,
+        roles: ['LECTOR']
+    },
+    {
+        to: '/dashboard/mis-prestamos',
+        texto: 'Mis préstamos',
+        Icono: AssignmentIcon,
+        roles: ['LECTOR']
+    },
+    {
+        to: '/dashboard/perfil',
+        texto: 'Mi perfil',
+        Icono: AccountCircleIcon,
+        roles: ['LECTOR']
+    }
+];
+
 function SideBar() {
+    const { user, loading } = useAuth();
+    const rol = user?.rol;
+
+    if (loading) return null;
+
     return (
         <aside className="sidebar">
             <h2 className="sidebar-title">Menú</h2>
 
             <nav>
                 <ul className="menu">
-                    <li>
-                        <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <HomeIcon className="icon" />
-                            <span>Inicio</span>
-                        </NavLink>
-                    </li>
-
-                    <li>
-                        <NavLink to="/dashboard/usuarios" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <CategoryIcon className="icon" />
-                            <span>Usuarios</span>
-                        </NavLink>
-                    </li>
-
-                    <li>
-                        <NavLink to="/dashboard/areas" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <CategoryIcon className="icon" />
-                            <span>Areas</span>
-                        </NavLink>
-                    </li>
-
-                    <li>
-                        <NavLink to="/dashboard/recursos" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <MenuBookIcon className="icon" />
-                            <span>Recursos</span>
-                        </NavLink>
-                    </li>
-
-                    <li>
-                        <NavLink to="/dashboard/lectores" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <PeopleIcon className="icon" />
-                            <span>Lectores</span>
-                        </NavLink>
-                    </li>
-
-                    <li>
-                        <NavLink to="/dashboard/prestamos" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <AssignmentIcon className="icon" />
-                            <span>Prestamos</span>
-                        </NavLink>
-                    </li>
-
-                    
+                    {opciones
+                        .filter(opcion => opcion.roles.includes(rol))
+                        .map(({ to, texto, Icono, end }) => (
+                            <li key={to}>
+                                <NavLink
+                                    to={to}
+                                    end={end}
+                                    className={({ isActive }) =>
+                                        isActive ? 'active' : ''
+                                    }
+                                >
+                                    <Icono className="icon" />
+                                    <span>{texto}</span>
+                                </NavLink>
+                            </li>
+                        ))}
                 </ul>
             </nav>
         </aside>

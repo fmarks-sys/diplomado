@@ -15,6 +15,11 @@ import {
 
 const router = express.Router();
 
+// Todas las rutas requieren bibliotecario
+router.use(
+    verifyToken,
+    isAdmin
+);
 
 // RUTAS DEL BIBLIOTECARIO
 
