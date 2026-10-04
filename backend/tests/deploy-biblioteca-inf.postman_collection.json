@@ -1,0 +1,89 @@
+{
+  "info": {
+    "_postman_id": "2ae59f37-7b2a-4666-a4a9-083445bafb46",
+    "name": "deploy-biblioteca-inf",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "9037691",
+    "_collection_link": "https://go.postman.co/collection/9037691-2ae59f37-7b2a-4666-a4a9-083445bafb46?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "P-01 Login Válido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Validamos que el backend responda con éxito (Código 200)\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validamos que la respuesta nos devuelva el Token JWT\r\npm.test(\"Devuelve un token JWT\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData).to.have.property('token'); \r\n    // Nota: Si tu API devuelve el token con otro nombre (ej. accessToken), cambia 'token' por ese nombre.\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"user\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url_backend}}/api/auth/login",
+          "host": [
+            "{{url_backend}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "P-02 Login no Válido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Validamos que el backend devuelva un error de no autorizado (Código 401)\r\npm.test(\"Status code es 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\n// Validamos que el backend devuelva un mensaje explicando el error\r\npm.test(\"Mensaje de credenciales incorrectas\", function () {\r\n    var jsonData = pm.response.json();\r\n    \r\n    // Verifica si la respuesta contiene un mensaje de error. \r\n    // Nota: Si tu backend devuelve el error en otra propiedad (ej: jsonData.error), cambia '.message' por esa propiedad.\r\n    pm.expect(jsonData.message).to.be.a('string');\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"user\",\r\n  \"password\": \"1234\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{url_backend}}/api/auth/login",
+          "host": [
+            "{{url_backend}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

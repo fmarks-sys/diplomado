@@ -204,6 +204,8 @@ export const login = async (
         process.env.JWT_SECRET,
         {
             expiresIn: '1h'
+            //expiresIn: '5m' // Vence en 5 minutos
+            //expiresIn: '30s' // Prueba: vence en 30 segundos
         }
     );
 
