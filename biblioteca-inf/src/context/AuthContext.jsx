@@ -1,69 +1,153 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    useCallback
+} from 'react';
+
 import { loginRequest } from '../services/authService.js';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+// AGREGADO: leer el vencimiento del JWT.
+// Esto no verifica su firma; esa validación corresponde al backend.
+const getExpiration = (token) => {
+    try {
+        const payload = token.split('.')[1];
+        const base64 = payload
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+
+        const padded = base64.padEnd(
+            Math.ceil(base64.length / 4) * 4,
+            '='
+        );
+
+        const { exp } = JSON.parse(atob(padded));
+
+        return typeof exp === 'number' && Number.isFinite(exp)
+            ? exp * 1000
+            : 0;
+    } catch {
+        return 0;
+    }
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Recuperar sesión al recargar
+    const logout = useCallback(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+    }, []);
+
+    // Recuperar sesión únicamente si el token sigue vigente.
     useEffect(() => {
-        // AGREGADO: manejar errores si el usuario guardado
-        // no contiene un JSON válido.
         try {
             const token = localStorage.getItem('token');
-
-            // AGREGADO: recuperar también los datos del usuario.
             const savedUser = localStorage.getItem('user');
 
-            // CAMBIADO: antes comprobabas únicamente el token.
-            if (token && savedUser) {
-                // AGREGADO: convertir el JSON en un objeto.
-                const parsedUser = JSON.parse(savedUser);
-
-                // AGREGADO: comprobar que contiene un rol.
-                if (parsedUser?.rol) {
-                    // CAMBIADO: antes era setUser({ token }).
-                    // Ahora recuperas el usuario completo, incluido rol.
-                    setUser(parsedUser);
-                }
+            if (!token || !savedUser) {
+                logout();
+                return;
             }
+
+            if (getExpiration(token) <= Date.now()) {
+                logout();
+                return;
+            }
+
+            const parsedUser = JSON.parse(savedUser);
+
+            if (!parsedUser?.username || !parsedUser?.rol) {
+                logout();
+                return;
+            }
+
+            setUser({
+                username: parsedUser.username,
+                rol: parsedUser.rol
+            });
         } catch {
-            // AGREGADO: limpiar los datos si ocurre un error de lectura.
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            logout();
         } finally {
-            // MOVIDO: termina la carga incluso si ocurre un error.
             setLoading(false);
         }
-    }, []);
+    }, [logout]);
+
+    // AGREGADO: cerrar sesión al vencer el token.
+    useEffect(() => {
+        if (!user) return;
+
+        let timer;
+
+        const checkExpiration = () => {
+            clearTimeout(timer);
+
+            const token = localStorage.getItem('token');
+            const remaining = getExpiration(token || '') - Date.now();
+
+            if (remaining <= 0) {
+                logout();
+                return;
+            }
+
+            timer = setTimeout(
+                checkExpiration,
+                Math.min(remaining, 2147483647)
+            );
+        };
+
+        checkExpiration();
+
+        // Revisar también cuando el navegador vuelve a estar activo.
+        window.addEventListener('focus', checkExpiration);
+        document.addEventListener(
+            'visibilitychange',
+            checkExpiration
+        );
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('focus', checkExpiration);
+            document.removeEventListener(
+                'visibilitychange',
+                checkExpiration
+            );
+        };
+    }, [user, logout]);
 
     const login = async (data) => {
         const res = await loginRequest(data);
 
+        if (
+            getExpiration(res.token || '') <= Date.now() ||
+            !res.user?.username ||
+            !res.user?.rol
+        ) {
+            throw new Error('Respuesta de sesión inválida');
+        }
+
+        const usuario = {
+            username: res.user.username,
+            rol: res.user.rol
+        };
+
         localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(usuario));
 
-        // AGREGADO: guardar el usuario para recuperarlo al recargar.
-        // localStorage guarda texto, por eso usamos JSON.stringify.
-        localStorage.setItem('user', JSON.stringify(res.user));
-
-        setUser(res.user);
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-
-        // AGREGADO: borrar también los datos del usuario al salir.
-        localStorage.removeItem('user');
-
-        setUser(null);
+        setUser(usuario);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider
+            value={{ user, login, logout, loading }}
+        >
             {children}
         </AuthContext.Provider>
     );
