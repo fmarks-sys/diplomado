@@ -49,7 +49,7 @@ function Navbar() {
 
                 <div className="user-profile">
                     <span className="user-name">
-                        {user?.nombre || 'Admin'}
+                        {user?.rol || ''}
                     </span>
 
                     <button className="btn-logout" onClick={handleLogout}>
