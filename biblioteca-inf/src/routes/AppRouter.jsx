@@ -8,8 +8,11 @@ import DashboardHome from '../pages/DashboardHome';
 import UsuariosPage from '../pages/usuarios/UsuariosPage';
 import AreasPage from '../pages/areas/AreasPage';
 import RecursosPage from '../pages/recursos/RecursosPage';
+import BuscarRecursosLector from '../pages/recursos/buscarRecursosLector';
 import LectoresPage from '../pages/lectores/LectoresPage';
 import PrestamosPage from '../pages/prestamos/PrestamosPage';
+import MisPrestamos from '../pages/prestamos/misPrestamos';
+import MiPerfil from '../pages/usuarios/MiPerfil';
 
 const AppRouter = () => {
     const token = localStorage.getItem('token');
@@ -35,8 +38,11 @@ const AppRouter = () => {
                     <Route path="usuarios" element={<UsuariosPage />} />
                     <Route path="areas" element={<AreasPage />} />
                     <Route path="recursos" element={<RecursosPage />} />
+                    <Route path="catalogo" element={<BuscarRecursosLector />} />
                     <Route path="lectores" element={<LectoresPage />} />
                     <Route path="prestamos" element={<PrestamosPage />} />
+                    <Route path="mis-prestamos" element={<MisPrestamos />} />
+                    <Route path="perfil" element={<MiPerfil />} />
 
 
                 </Route>

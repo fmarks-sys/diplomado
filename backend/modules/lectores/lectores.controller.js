@@ -65,7 +65,7 @@ export const cambiarEstado = async (req, res) => {
 
 export const getMiPerfil = async (req, res) => {
     try {
-        const loginId = req.user?.id;
+        const loginId = req.user?.loginId;
 
         if (!loginId) {
             return res.status(401).json({ error: 'Token sin identificador de usuario' });

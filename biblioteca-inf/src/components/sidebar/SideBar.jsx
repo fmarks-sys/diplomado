@@ -64,7 +64,7 @@ const opciones = [
         to: '/dashboard/perfil',
         texto: 'Mi perfil',
         Icono: AccountCircleIcon,
-        roles: ['LECTOR']
+        roles: ['BIBLIOTECARIO', 'LECTOR']
     }
 ];
 
