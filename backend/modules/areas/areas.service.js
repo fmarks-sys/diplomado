@@ -1,5 +1,12 @@
 import * as repo from './areas.repository.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
+const validarId = (id) => {
+    if (!['string', 'number'].includes(typeof id) || !/^\d+$/.test(String(id))
+        || !Number.isInteger(Number(id)) || Number(id) < 1 || Number(id) > 2147483647) {
+        throw errorHttp(400, 'ID de área inválido');
+    }
+};
 // LISTAR TODAS LAS ÁREAS
 export const listAreas = async () => {
     return await repo.getAllAreas();
@@ -15,8 +22,8 @@ export const listAreasActivas = async () => {
 // CREAR ÁREA
 export const addArea = async (nombre) => {
 
-    if (!nombre || !nombre.trim()) {
-        throw new Error('Nombre requerido');
+    if (typeof nombre !== 'string' || !nombre.trim()) {
+        throw errorHttp(400, 'Nombre requerido o inválido');
     }
 
     const nombreNormalizado = nombre
@@ -31,7 +38,7 @@ export const addArea = async (nombre) => {
 
         // PostgreSQL: unique_violation
         if (error.code === '23505') {
-            throw new Error('Ya existe un área con ese nombre');
+            throw errorHttp(409, 'Ya existe un área con ese nombre');
         }
 
         throw error;
@@ -41,12 +48,10 @@ export const addArea = async (nombre) => {
 // ACTUALIZAR ÁREA
 export const editArea = async (id, nombre) => {
 
-    if (!id || isNaN(Number(id))) {
-        throw new Error('ID de área inválido');
-    }
+    validarId(id);
 
-    if (!nombre || !nombre.trim()) {
-        throw new Error('Nombre requerido');
+    if (typeof nombre !== 'string' || !nombre.trim()) {
+        throw errorHttp(400, 'Nombre requerido o inválido');
     }
 
     const nombreNormalizado = nombre
@@ -62,7 +67,7 @@ export const editArea = async (id, nombre) => {
         );
 
         if (!area) {
-            throw new Error('Área no encontrada');
+            throw errorHttp(404, 'Área no encontrada');
         }
 
         return area;
@@ -71,7 +76,7 @@ export const editArea = async (id, nombre) => {
 
         // PostgreSQL: unique_violation
         if (error.code === '23505') {
-            throw new Error('Ya existe un area con ese nombre');
+            throw errorHttp(409, 'Ya existe un área con ese nombre');
         }
 
         throw error;
@@ -83,14 +88,12 @@ export const editArea = async (id, nombre) => {
 // ACTIVO <-> INACTIVO
 export const changeAreaEstado = async (id) => {
 
-    if (!id || isNaN(Number(id))) {
-        throw new Error('ID de área inválido');
-    }
+    validarId(id);
 
     const area = await repo.toggleAreaEstado(id);
 
     if (!area) {
-        throw new Error('Área no encontrada');
+        throw errorHttp(404, 'Área no encontrada');
     }
 
     return area;

@@ -1,5 +1,6 @@
 import * as repo from './recursos.repository.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
 const TIPOS_RECURSO = ['LIBRO', 'TESIS'];
 const ESTADOS_RECURSO = ['DISPONIBLE', 'MANTENIMIENTO', 'BAJA'];
 const SOPORTES_TESIS = ['EMPASTADO', 'CD', 'DIGITAL', 'AMBOS'];
@@ -12,47 +13,47 @@ const normalizarTipo = (valor) =>
 
 const validarEnteroPositivo = (valor, campo) => {
     const numero = Number(valor);
-    if (!Number.isInteger(numero) || numero < 1) {
-        throw new Error(`${campo} debe ser un número entero mayor o igual a 1`);
+    if (!['string', 'number'].includes(typeof valor) || !/^\d+$/.test(String(valor))
+        || !Number.isInteger(numero) || numero < 1 || numero > 2147483647) {
+        throw errorHttp(400, `${campo} debe ser un número entero mayor o igual a 1`);
     }
     return numero;
 };
 
 const prepararRecurso = (data, { actualizando = false } = {}) => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw errorHttp(400, 'Datos de recurso requeridos');
+    }
     const recurso = { ...data };
 
     recurso.codigo_topografico = normalizarTexto(recurso.codigo_topografico);
     recurso.titulo = normalizarTexto(recurso.titulo);
     recurso.tipo_recurso = normalizarTipo(recurso.tipo_recurso);
 
-    if (!recurso.codigo_topografico || !recurso.titulo || !recurso.anio_publicacion || !recurso.tipo_recurso) {
-        throw new Error('Campos requeridos incompletos (código topográfico, título, año y tipo)');
+    if (typeof recurso.codigo_topografico !== 'string' || !recurso.codigo_topografico
+        || typeof recurso.titulo !== 'string' || !recurso.titulo
+        || !recurso.anio_publicacion || !recurso.tipo_recurso) {
+        throw errorHttp(400, 'Campos requeridos incompletos o inválidos (código topográfico, título, año y tipo)');
     }
 
     if (!TIPOS_RECURSO.includes(recurso.tipo_recurso)) {
-        throw new Error('tipo_recurso debe ser LIBRO o TESIS');
+        throw errorHttp(400, 'tipo_recurso debe ser LIBRO o TESIS');
     }
 
-    const anio = Number(recurso.anio_publicacion);
-    if (!Number.isInteger(anio) || anio < 1) {
-        throw new Error('anio_publicacion debe ser un año válido');
-    }
+    const anio = validarEnteroPositivo(recurso.anio_publicacion, 'anio_publicacion');
     recurso.anio_publicacion = anio;
 
     if (recurso.area_id === '' || recurso.area_id === undefined) {
         recurso.area_id = null;
     } else if (recurso.area_id !== null) {
-        const areaId = Number(recurso.area_id);
-        if (!Number.isInteger(areaId) || areaId < 1) {
-            throw new Error('area_id no es válido');
-        }
+        const areaId = validarEnteroPositivo(recurso.area_id, 'area_id');
         recurso.area_id = areaId;
     }
 
     if (recurso.tipo_recurso === 'LIBRO') {
         recurso.autor = normalizarTexto(recurso.autor);
-        if (!recurso.autor) {
-            throw new Error('El autor es obligatorio para libros');
+        if (typeof recurso.autor !== 'string' || !recurso.autor) {
+            throw errorHttp(400, 'El autor es obligatorio para libros');
         }
 
         recurso.cantidad_total = validarEnteroPositivo(recurso.cantidad_total ?? 1, 'cantidad_total');
@@ -64,20 +65,21 @@ const prepararRecurso = (data, { actualizando = false } = {}) => {
         recurso.gestion_defensa = normalizarTexto(recurso.gestion_defensa);
         recurso.soporte_fisico = normalizarTipo(recurso.soporte_fisico || 'EMPASTADO');
 
-        if (!recurso.autor_postulante || !recurso.tutor_guia || !recurso.gestion_defensa) {
-            throw new Error('Autor postulante, tutor guía y gestión de defensa son obligatorios para tesis');
+        if (['autor_postulante', 'tutor_guia', 'gestion_defensa'].some((campo) =>
+            typeof recurso[campo] !== 'string' || !recurso[campo])) {
+            throw errorHttp(400, 'Autor postulante, tutor guía y gestión de defensa son obligatorios para tesis');
         }
 
         if (!SOPORTES_TESIS.includes(recurso.soporte_fisico)) {
-            throw new Error('soporte_fisico debe ser EMPASTADO, CD, DIGITAL o AMBOS');
+            throw errorHttp(400, 'soporte_fisico debe ser EMPASTADO, CD, DIGITAL o AMBOS');
         }
 
         if (recurso.tribunal_jurado === undefined || recurso.tribunal_jurado === null) {
             recurso.tribunal_jurado = [];
         }
 
-        if (!Array.isArray(recurso.tribunal_jurado)) {
-            throw new Error('tribunal_jurado debe ser un arreglo');
+        if (!Array.isArray(recurso.tribunal_jurado) || recurso.tribunal_jurado.some((valor) => typeof valor !== 'string')) {
+            throw errorHttp(400, 'tribunal_jurado debe ser un arreglo de textos');
         }
 
         recurso.tribunal_jurado = recurso.tribunal_jurado
@@ -89,12 +91,18 @@ const prepararRecurso = (data, { actualizando = false } = {}) => {
     }
 
     if (recurso.palabras_clave !== undefined) {
-        if (!Array.isArray(recurso.palabras_clave)) {
-            throw new Error('palabras_clave debe ser un arreglo');
+        if (!Array.isArray(recurso.palabras_clave) || recurso.palabras_clave.some((valor) => typeof valor !== 'string')) {
+            throw errorHttp(400, 'palabras_clave debe ser un arreglo de textos');
         }
         recurso.palabras_clave = recurso.palabras_clave
             .map((p) => String(p).trim().toUpperCase())
             .filter(Boolean);
+    }
+
+    for (const campo of ['isbn', 'editorial', 'edicion', 'url_documento_pdf']) {
+        if (recurso[campo] != null && typeof recurso[campo] !== 'string') {
+            throw errorHttp(400, `${campo} debe ser texto`);
+        }
     }
 
     if (actualizando && recurso.cantidad_disponible !== undefined) {
@@ -109,9 +117,9 @@ export const listRecursos = async () => repo.getAllRecursos();
 
 // OBTENER POR ID
 export const findRecursoById = async (id) => {
-    if (!id) throw new Error('ID requerido');
+    validarEnteroPositivo(id, 'ID de recurso');
     const recurso = await repo.getRecursoById(id);
-    if (!recurso) throw new Error('Recurso no encontrado');
+    if (!recurso) throw errorHttp(404, 'Recurso no encontrado');
     return recurso;
 };
 
@@ -123,31 +131,31 @@ export const addRecurso = async (data) => {
 
 // ACTUALIZAR
 export const editRecurso = async (id, data) => {
-    if (!id) throw new Error('ID requerido');
+    validarEnteroPositivo(id, 'ID de recurso');
     const recurso = prepararRecurso(data, { actualizando: true });
     const actualizado = await repo.updateRecurso(id, recurso);
-    if (!actualizado) throw new Error('Recurso no encontrado');
+    if (!actualizado) throw errorHttp(404, 'Recurso no encontrado');
     return actualizado;
 };
 
 // CAMBIAR ESTADO
 export const changeEstado = async (id, estado) => {
-    if (!id) throw new Error('ID requerido');
+    validarEnteroPositivo(id, 'ID de recurso');
 
     const estadoNormalizado = normalizarTipo(estado);
     if (!ESTADOS_RECURSO.includes(estadoNormalizado)) {
-        throw new Error('Estado inválido. Use DISPONIBLE, MANTENIMIENTO o BAJA');
+        throw errorHttp(400, 'Estado inválido. Use DISPONIBLE, MANTENIMIENTO o BAJA');
     }
 
     const recurso = await repo.updateEstadoRecurso(id, estadoNormalizado);
-    if (!recurso) throw new Error('Recurso no encontrado');
+    if (!recurso) throw errorHttp(404, 'Recurso no encontrado');
     return recurso;
 };
 
 // ELIMINACIÓN FÍSICA (uso administrativo)
 export const removeRecurso = async (id) => {
-    if (!id) throw new Error('ID requerido');
+    validarEnteroPositivo(id, 'ID de recurso');
     const eliminado = await repo.deleteRecurso(id);
-    if (!eliminado) throw new Error('Recurso no encontrado');
+    if (!eliminado) throw errorHttp(404, 'Recurso no encontrado');
     return eliminado;
 };

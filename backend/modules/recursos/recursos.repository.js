@@ -174,7 +174,7 @@ export const updateRecurso = async (id, data) => {
             cantidadDisponible = cantidadPrestada > 0 ? 0 : 1;
         } else {
             if (cantidadTotal < cantidadPrestada) {
-                throw new Error(`No se puede reducir cantidad_total a ${cantidadTotal}; existen ${cantidadPrestada} ejemplar(es) no disponibles`);
+                throw Object.assign(new Error(`No se puede reducir cantidad_total a ${cantidadTotal}; existen ${cantidadPrestada} ejemplar(es) no disponibles`), { status: 409 });
             }
             cantidadDisponible = cantidadTotal - cantidadPrestada;
         }

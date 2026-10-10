@@ -1,5 +1,21 @@
 import * as service from './areas.service.js';
 
+const responderError = (res, error) => {
+    let status = error.status || 500;
+    let message = error.message;
+    if (error.code === '23505') {
+        status = 409;
+        message = 'Ya existe un área con ese nombre';
+    } else if (['23502', '23503', '23514', '22001', '22P02'].includes(error.code)) {
+        status = 400;
+        message = 'Datos de área inválidos';
+    }
+    if (status === 500) {
+        console.error(error);
+        message = 'Error interno del servidor';
+    }
+    return res.status(status).json({ error: message });
+};
 
 
 // LISTAR TODAS LAS ÁREAS
@@ -12,11 +28,7 @@ export const getAreas = async (req, res) => {
 
     } catch (error) {
 
-        console.error('Error al listar áreas:', error);
-
-        res.status(500).json({
-            error: 'Error al obtener las áreas'
-        });
+        return responderError(res, error);
     }
 };
 
@@ -31,11 +43,7 @@ export const getAreasActivas = async (req, res) => {
 
     } catch (error) {
 
-        console.error('Error al listar áreas activas:', error);
-
-        res.status(500).json({
-            error: 'Error al obtener las áreas activas'
-        });
+        return responderError(res, error);
     }
 };
 
@@ -44,7 +52,7 @@ export const getAreasActivas = async (req, res) => {
 export const crearArea = async (req, res) => {
     try {
 
-        const { nombre } = req.body;
+        const nombre = req.body?.nombre;
 
         const data = await service.addArea(nombre);
 
@@ -52,9 +60,7 @@ export const crearArea = async (req, res) => {
 
     } catch (error) {
 
-        res.status(400).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -64,7 +70,7 @@ export const updateArea = async (req, res) => {
     try {
 
         const { id } = req.params;
-        const { nombre } = req.body;
+        const nombre = req.body?.nombre;
 
         const data = await service.editArea(
             id,
@@ -75,14 +81,7 @@ export const updateArea = async (req, res) => {
 
     } catch (error) {
 
-        const status =
-            error.message === 'Área no encontrada'
-                ? 404
-                : 400;
-
-        res.status(status).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -106,13 +105,6 @@ export const cambiarEstadoArea = async (req, res) => {
 
     } catch (error) {
 
-        const status =
-            error.message === 'Área no encontrada'
-                ? 404
-                : 400;
-
-        res.status(status).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
