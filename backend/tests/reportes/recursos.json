@@ -1,0 +1,754 @@
+{
+  "modulo": "Recursos",
+  "ejecucion_utc": "2026-10-10T18:43:55.344Z",
+  "api": "http://localhost:3000",
+  "herramienta": "Newman 6.2.2",
+  "resumen": {
+    "solicitudes": 26,
+    "casos_aprobados": 26,
+    "casos_fallidos": 0
+  },
+  "casos": [
+    {
+      "id": "R-01",
+      "escenario": "R-01 Sin token",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 15,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-02",
+      "escenario": "R-02 Listar bibliotecario",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 22,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Lista JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-03",
+      "escenario": "R-03 Listar lector",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 13,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Lista JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-04",
+      "escenario": "R-04 ID invalido",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos/no-numero",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 14,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-05",
+      "escenario": "R-05 Recurso inexistente",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos/2147483647",
+      "esperado": 404,
+      "obtenido": 404,
+      "tiempo_ms": 47,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 404",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-06",
+      "escenario": "R-06 Faltan datos",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 10,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-07",
+      "escenario": "R-07 Autor vacio",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 12,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-08",
+      "escenario": "R-08 Cantidad invalida",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 12,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-09",
+      "escenario": "R-09 Area inexistente",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 30,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-10",
+      "escenario": "R-10 Crear libro",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 201,
+      "obtenido": 201,
+      "tiempo_ms": 54,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Stock inicial",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-11",
+      "escenario": "R-11 Codigo duplicado",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 409,
+      "obtenido": 409,
+      "tiempo_ms": 17,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-12",
+      "escenario": "R-12 Consultar disponibilidad lector",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos/18",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 57,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Disponible",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-13",
+      "escenario": "R-13 Editar libro",
+      "modulo": "Recursos",
+      "metodo": "PUT",
+      "ruta": "/api/recursos/18",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 19,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-14",
+      "escenario": "R-14 Editar inexistente",
+      "modulo": "Recursos",
+      "metodo": "PUT",
+      "ruta": "/api/recursos/2147483647",
+      "esperado": 404,
+      "obtenido": 404,
+      "tiempo_ms": 14,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 404",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-15",
+      "escenario": "R-15 Estado invalido",
+      "modulo": "Recursos",
+      "metodo": "PATCH",
+      "ruta": "/api/recursos/18/estado",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 12,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-16",
+      "escenario": "R-16 Poner mantenimiento",
+      "modulo": "Recursos",
+      "metodo": "PATCH",
+      "ruta": "/api/recursos/18/estado",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 23,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-17",
+      "escenario": "R-17 Restaurar disponible",
+      "modulo": "Recursos",
+      "metodo": "PATCH",
+      "ruta": "/api/recursos/18/estado",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 17,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-18",
+      "escenario": "R-18 Tesis incompleta",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 17,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-19",
+      "escenario": "R-19 Crear tesis",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 201,
+      "obtenido": 201,
+      "tiempo_ms": 27,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Una unidad de tesis",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-20",
+      "escenario": "R-20 Lector sin permiso de modificar",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 18,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-21",
+      "escenario": "R-21 Lector sin permiso de modificar",
+      "modulo": "Recursos",
+      "metodo": "PUT",
+      "ruta": "/api/recursos/18",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 14,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-22",
+      "escenario": "R-22 Lector sin permiso de modificar",
+      "modulo": "Recursos",
+      "metodo": "PATCH",
+      "ruta": "/api/recursos/18/estado",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 13,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-23",
+      "escenario": "R-23 Lector sin permiso de modificar",
+      "modulo": "Recursos",
+      "metodo": "DELETE",
+      "ruta": "/api/recursos/18",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 13,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-24",
+      "escenario": "R-24 Crear libro para eliminar",
+      "modulo": "Recursos",
+      "metodo": "POST",
+      "ruta": "/api/recursos",
+      "esperado": 201,
+      "obtenido": 201,
+      "tiempo_ms": 21,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-25",
+      "escenario": "R-25 Eliminar recurso sin prestamos",
+      "modulo": "Recursos",
+      "metodo": "DELETE",
+      "ruta": "/api/recursos/21",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 17,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "R-26",
+      "escenario": "R-26 Eliminado no existe",
+      "modulo": "Recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos/21",
+      "esperado": 404,
+      "obtenido": 404,
+      "tiempo_ms": 19,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 404",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    }
+  ],
+  "limpieza": {
+    "completada": true,
+    "personas_temporales_eliminadas": 8,
+    "prestamos_temporales_eliminados": 3,
+    "recursos_temporales_eliminados": 2,
+    "areas_temporales_eliminadas": 1
+  }
+}

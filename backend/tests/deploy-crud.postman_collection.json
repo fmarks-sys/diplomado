@@ -1,0 +1,4659 @@
+{
+  "info": {
+    "name": "E3 - Deploy CRUD con datos ficticios",
+    "description": "Requiere pnpm test:deploy:crud: verifica la base del despliegue, prepara cuentas temporales y limpia exclusivamente sus datos. Credenciales y tokens mediante variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "url_backend",
+      "value": "https://diplomado-production-40c1.up.railway.app"
+    }
+  ],
+  "item": [
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "U-01 Sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/usuarios"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-02 Lector no administra usuarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-03 Listado bibliotecario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-04 ID invalido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/no-numero"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-05 Usuario inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{id_inexistente}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-06 Faltan datos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-07 Correo invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"invalido\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-08 Rol inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{id_inexistente}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-09 Lector no crea usuarios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-10 Crear usuario lector y persona",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"usuario_id\", pm.response.json().data.login.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-11 Lectores sincronizados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"usuario_lector_id\", pm.response.json().lector_id);",
+                  "pm.test(\"Lector asociado\", () => { pm.expect(pm.response.json().rol).to.eql(\"LECTOR\"); pm.expect(pm.response.json().lector_id).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-12 CI duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-13 Correo duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci_alternativo}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-14 Username duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci_alternativo}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo_alternativo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-15 Actualizar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Actualizado\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Nombre actualizado\", () => { pm.expect(pm.response.json().data.nombres).to.eql(\"Actualizado\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-16 Actualizar inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{id_inexistente}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-17 Password vacio",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-18 Cambiar password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{password_nuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-19 Login con nuevo password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{password_nuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"JWT emitido\", () => { pm.expect(pm.response.json().token).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-20 Estado invalido",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"INVALIDO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-21 Desactivar cuenta",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"INACTIVO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-22 Login cuenta desactivada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{password_nuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-23 Reactivar cuenta",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ACTIVO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-24 Persona inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/persona/{{id_inexistente}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{persona_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-25 Lector sin permiso de modificar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{usuario_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{usuario_correo}}\",\n  \"tipo_lector\": \"EXTERNO\",\n  \"username\": \"{{usuario_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-26 Lector sin permiso de modificar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{password_nuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "U-27 Lector sin permiso de modificar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{usuario_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"INACTIVO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lectores",
+      "item": [
+        {
+          "name": "L-01 Sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/lectores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-02 Listado bibliotecario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });",
+                  "pm.test(\"Usuario nuevo aparece como lector\", () => { pm.expect(pm.response.json().some(x => x.ci === pm.environment.get(\"usuario_ci\"))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-03 Lector no administra lectores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-04 Perfil lector propio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/mi-perfil"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Identidad del lector\", () => { pm.expect(pm.response.json().username).to.eql(pm.environment.get(\"lector_username\")); pm.expect(pm.response.json().rol).to.eql(\"LECTOR\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-05 Perfil bibliotecario propio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/mi-perfil"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Identidad del bibliotecario\", () => { pm.expect(pm.response.json().username).to.eql(pm.environment.get(\"bibliotecario_username\")); pm.expect(pm.response.json().rol).to.eql(\"BIBLIOTECARIO\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-06 Faltan datos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-07 Tipo invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"INVALIDO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-08 Crear lector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"nuevo_lector_id\", pm.response.json().id);",
+                  "if (pm.response.code < 300) pm.environment.set(\"nuevo_persona_id\", pm.response.json().persona_id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-09 Duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-10 Editar lector",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{nuevo_lector_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Actualizado\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Nombre actualizado\", () => { pm.expect(pm.response.json().nombres).to.eql(\"Actualizado\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-11 ID invalido",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/no-numero",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-12 Lector inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{id_inexistente}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-13 Sancionar lector",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/estado/{{nuevo_lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Estado sancionado\", () => { pm.expect(pm.response.json().estado).to.eql(\"SANCIONADO\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-14 Reactivar lector",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/estado/{{nuevo_lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Estado activo\", () => { pm.expect(pm.response.json().estado).to.eql(\"ACTIVO\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-15 Lector sin permiso de modificar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-16 Lector sin permiso de modificar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{nuevo_lector_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ci\": \"{{nuevo_lector_ci}}\",\n  \"nombres\": \"Prueba\",\n  \"ap\": \"E3\",\n  \"am\": \"Temporal\",\n  \"correo\": \"{{nuevo_lector_correo}}\",\n  \"tipo_lector\": \"EXTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-17 Lector sin permiso de modificar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/estado/{{nuevo_lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-18 Lector sin permiso de modificar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{nuevo_lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-19 Crear acceso de persona existente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/persona/{{nuevo_persona_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{persona_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"persona_usuario_id\", pm.response.json().data.login.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-20 Acceso ya existente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/persona/{{nuevo_persona_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{persona_username}}\",\n  \"password\": \"{{test_password}}\",\n  \"rol_id\": \"{{rol_lector}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-21 Eliminar lector sin prestamos",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{nuevo_lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-22 Lector eliminado no existe",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{nuevo_lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "L-23 Cuenta asociada eliminada",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/usuarios/{{persona_usuario_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Areas",
+      "item": [
+        {
+          "name": "AR-01 Sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/areas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-02 Lector sin permiso",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-03 Listar areas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-04 Nombre vacio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-05 Nombre no textual",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": 123\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-06 Crear area",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"area_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-07 Nombre duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-08 Actualizar area",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/{{area_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre_editado}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-09 ID invalido",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/no-numero",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-10 Area inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/{{id_inexistente}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-11 Desactivar area",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/{{area_id}}/estado"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Estado inactivo\", () => { pm.expect(pm.response.json().area.estado).to.eql(\"INACTIVO\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-12 Activas excluyen area desactivada",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/activas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });",
+                  "pm.test(\"Area desactivada excluida\", () => { pm.expect(pm.response.json().some(x => x.id === Number(pm.environment.get(\"area_id\")))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-13 Reactivar area",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/{{area_id}}/estado"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-14 Lector sin permiso de modificar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-15 Lector sin permiso de modificar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/{{area_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{area_nombre}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "AR-16 Lector sin permiso de modificar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/areas/{{area_id}}/estado"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recursos",
+      "item": [
+        {
+          "name": "R-01 Sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/recursos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-02 Listar bibliotecario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-03 Listar lector",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-04 ID invalido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/no-numero"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-05 Recurso inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{id_inexistente}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-06 Faltan datos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-07 Autor vacio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-08 Cantidad invalida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": -1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-09 Area inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{id_inexistente}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-10 Crear libro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"libro_id\", pm.response.json().id);",
+                  "pm.test(\"Stock inicial\", () => { pm.expect(pm.response.json().cantidad_disponible).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-11 Codigo duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-12 Consultar disponibilidad lector",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Disponible\", () => { pm.expect(pm.response.json().cantidad_disponible).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-13 Editar libro",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal actualizado E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-14 Editar inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{id_inexistente}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-15 Estado invalido",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"INVALIDO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-16 Poner mantenimiento",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"MANTENIMIENTO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-17 Restaurar disponible",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-18 Tesis incompleta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{tesis_codigo}}\",\n  \"titulo\": \"Tesis temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"TESIS\",\n  \"autor_postulante\": \"Autor ficticio\",\n  \"tutor_guia\": \"\",\n  \"gestion_defensa\": \"2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-19 Crear tesis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{tesis_codigo}}\",\n  \"titulo\": \"Tesis temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"TESIS\",\n  \"autor_postulante\": \"Autor ficticio\",\n  \"tutor_guia\": \"Tutor ficticio\",\n  \"gestion_defensa\": \"2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"tesis_id\", pm.response.json().id);",
+                  "pm.test(\"Una unidad de tesis\", () => { pm.expect(pm.response.json().cantidad_total).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-20 Lector sin permiso de modificar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-21 Lector sin permiso de modificar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{libro_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-22 Lector sin permiso de modificar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"BAJA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-23 Lector sin permiso de modificar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-24 Crear libro para eliminar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_topografico\": \"{{borrable_codigo}}\",\n  \"titulo\": \"Libro temporal E3\",\n  \"anio_publicacion\": 2026,\n  \"area_id\": \"{{area_id}}\",\n  \"tipo_recurso\": \"LIBRO\",\n  \"autor\": \"Autor ficticio\",\n  \"cantidad_total\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"borrable_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-25 Eliminar recurso sin prestamos",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{borrable_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "R-26 Eliminado no existe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{borrable_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Prestamos",
+      "item": [
+        {
+          "name": "PR-01 Sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-02 Listado bibliotecario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-03 Lector no ve todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-04 Lector no crea prestamos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-05 Datos faltantes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-06 ID invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": -1,\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-07 Fecha imposible",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"2999-02-31\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-08 Fecha pasada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_ayer}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-09 Tipo invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"INVALIDO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-10 Lector inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{id_inexistente}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-11 Recurso inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{id_inexistente}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-12 Lector sancionado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_sancionado_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-13 Preparar mantenimiento",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"MANTENIMIENTO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-14 Recurso en mantenimiento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-15 Restaurar recurso",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-16 Tesis no sale a domicilio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{tesis_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-17 Prestar libro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"prestamo_id\", pm.response.json().prestamo.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-18 Stock descontado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Queda una unidad\", () => { pm.expect(pm.response.json().cantidad_disponible).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-19 Prestamo activo duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-20 Prestar otra unidad a otro lector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_otro_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"prestamo_otro_id\", pm.response.json().prestamo.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-21 Sin unidades",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{usuario_lector_id}}\",\n  \"recurso_id\": \"{{libro_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"DOMICILIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-22 Mis prestamos solo propios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/mis-prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });",
+                  "pm.test(\"Pendiente propio y aislamiento\", () => { const rows = pm.response.json(); pm.expect(rows.some(x => x.id === Number(pm.environment.get(\"prestamo_id\")) && x.estado === \"PRESTADO\")).to.eql(true); pm.expect(rows.every(x => x.lector_id === Number(pm.environment.get(\"lector_id\")))).to.eql(true); pm.expect(rows.some(x => x.id === Number(pm.environment.get(\"prestamo_otro_id\")))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-23 Mis alertas propias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/mis-alertas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });",
+                  "pm.test(\"Vence hoy y aislamiento\", () => { const rows = pm.response.json(); pm.expect(rows.some(x => x.id === Number(pm.environment.get(\"prestamo_id\")) && x.tipo_alerta === \"VENCE_HOY\")).to.eql(true); pm.expect(rows.every(x => x.lector_id === Number(pm.environment.get(\"lector_id\")))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-24 Bibliotecario no usa mis prestamos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/mis-prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-25 Bibliotecario no usa mis alertas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/mis-alertas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-26 Eliminar recurso con prestamos",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-27 Eliminar lector con prestamos",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/lectores/{{lector_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-28 Lector no registra devolucion",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/{{prestamo_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-29 Devolver inexistente",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/{{id_inexistente}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-30 Devolver ID invalido",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/no-numero"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-31 Devolver libro",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/{{prestamo_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Estado devuelto\", () => { pm.expect(pm.response.json().prestamo.estado).to.eql(\"DEVUELTO\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-32 Stock restaurado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Una unidad disponible\", () => { pm.expect(pm.response.json().cantidad_disponible).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-33 Segunda devolucion",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/{{prestamo_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Error informado\", () => { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-34 Historial propio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/mis-prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });",
+                  "pm.test(\"Historial devuelto\", () => { pm.expect(pm.response.json().some(x => x.id === Number(pm.environment.get(\"prestamo_id\")) && x.estado === \"DEVUELTO\")).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-35 Sin alerta tras devolver",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/mis-alertas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Lista JSON\", () => { pm.expect(pm.response.json()).to.be.an(\"array\"); });",
+                  "pm.test(\"Devuelto excluido de alertas\", () => { pm.expect(pm.response.json().some(x => x.id === Number(pm.environment.get(\"prestamo_id\")))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-36 Prestar tesis en sala",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lector_id\": \"{{lector_id}}\",\n  \"recurso_id\": \"{{tesis_id}}\",\n  \"fecha_devolucion_prevista\": \"{{fecha_hoy}}\",\n  \"tipo_prestamo\": \"SALA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "if (pm.response.code < 300) pm.environment.set(\"prestamo_tesis_id\", pm.response.json().prestamo.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-37 Devolver tesis",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/{{prestamo_tesis_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-38 Devolver otra unidad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/prestamos/devolver/{{prestamo_otro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "PR-39 Stock final completo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/recursos/{{libro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta JSON\", () => { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\"); });",
+                  "pm.test(\"Sin credenciales en respuesta\", () => { pm.expect(pm.response.text()).not.to.include(\"password_hash\"); pm.expect(pm.response.text()).not.to.include(pm.environment.get(\"test_password\")); });",
+                  "pm.test(\"Dos unidades disponibles\", () => { pm.expect(pm.response.json().cantidad_disponible).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}

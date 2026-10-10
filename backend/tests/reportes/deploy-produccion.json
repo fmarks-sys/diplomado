@@ -1,0 +1,1134 @@
+{
+  "coleccion": "E3 - Deploy produccion: salud, auth, consultas y permisos",
+  "ejecucion_utc": "2026-10-10T22:08:34.759Z",
+  "api": "https://diplomado-production-40c1.up.railway.app",
+  "entorno": "Produccion",
+  "herramienta": "Newman",
+  "alcance": "Salud, entradas invalidas en login, autenticacion, consultas de usuarios/lectores/areas/recursos/perfil y permisos. Sin operaciones CRUD de escritura.",
+  "observaciones": [
+    "El login valido registra el ultimo acceso de la cuenta.",
+    "No se ejecutaron consultas de prestamos autorizadas: actualizan estados a VENCIDO.",
+    "No se guardan credenciales, tokens, datos personales ni cuerpos de peticiones/respuestas."
+  ],
+  "resumen": {
+    "solicitudes": 38,
+    "casos_aprobados": 38,
+    "casos_fallidos": 0,
+    "comprobaciones": 154,
+    "comprobaciones_fallidas": 0,
+    "fallos_newman": 0
+  },
+  "casos": [
+    {
+      "id": "DEP-01",
+      "escenario": "DEP-01 Salud publica",
+      "metodo": "GET",
+      "ruta": "/api/v1/salud",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 848,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado ok",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-02",
+      "escenario": "DEP-02 Ruta inexistente",
+      "metodo": "GET",
+      "ruta": "/api/v1/no-existe-e3",
+      "esperado": 404,
+      "obtenido": 404,
+      "error_red": null,
+      "tiempo_ms": 375,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 404",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-03",
+      "escenario": "DEP-03 JSON mal formado",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 400,
+      "obtenido": 400,
+      "error_red": null,
+      "tiempo_ms": 416,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-04",
+      "escenario": "DEP-04 Login sin datos",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 400,
+      "obtenido": 400,
+      "error_red": null,
+      "tiempo_ms": 370,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-05",
+      "escenario": "DEP-05 Login con formato invalido",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 400,
+      "obtenido": 400,
+      "error_red": null,
+      "tiempo_ms": 348,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-06",
+      "escenario": "DEP-06 Credenciales inexistentes",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 629,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-07",
+      "escenario": "DEP-07 Sin token: /api/usuarios",
+      "metodo": "GET",
+      "ruta": "/api/usuarios",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 364,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-08",
+      "escenario": "DEP-08 Token invalido: /api/usuarios",
+      "metodo": "GET",
+      "ruta": "/api/usuarios",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 367,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-09",
+      "escenario": "DEP-09 Sin token: /api/lectores",
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 343,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-10",
+      "escenario": "DEP-10 Token invalido: /api/lectores",
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 344,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-11",
+      "escenario": "DEP-11 Sin token: /api/areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 353,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-12",
+      "escenario": "DEP-12 Token invalido: /api/areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 364,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-13",
+      "escenario": "DEP-13 Sin token: /api/recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 374,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-14",
+      "escenario": "DEP-14 Token invalido: /api/recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 378,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-15",
+      "escenario": "DEP-15 Sin token: /api/prestamos",
+      "metodo": "GET",
+      "ruta": "/api/prestamos",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 339,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-16",
+      "escenario": "DEP-16 Token invalido: /api/prestamos",
+      "metodo": "GET",
+      "ruta": "/api/prestamos",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 375,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-17",
+      "escenario": "DEP-17 Sin token: /api/lectores/mi-perfil",
+      "metodo": "GET",
+      "ruta": "/api/lectores/mi-perfil",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 532,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-18",
+      "escenario": "DEP-18 Token invalido: /api/lectores/mi-perfil",
+      "metodo": "GET",
+      "ruta": "/api/lectores/mi-perfil",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 365,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-19",
+      "escenario": "DEP-19 Sin token: /api/prestamos/mis-prestamos",
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 372,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-20",
+      "escenario": "DEP-20 Token invalido: /api/prestamos/mis-prestamos",
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 359,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-21",
+      "escenario": "DEP-21 Sin token: /api/prestamos/mis-alertas",
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-alertas",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 384,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-22",
+      "escenario": "DEP-22 Token invalido: /api/prestamos/mis-alertas",
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-alertas",
+      "esperado": 401,
+      "obtenido": 401,
+      "error_red": null,
+      "tiempo_ms": 410,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-23",
+      "escenario": "DEP-23 Login valido bibliotecario",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 599,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "JWT emitido",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Rol BIBLIOTECARIO",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-24",
+      "escenario": "DEP-24 Login valido lector",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 492,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "JWT emitido",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Rol LECTOR",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-25",
+      "escenario": "DEP-25 Consulta bibliotecario: /api/usuarios",
+      "metodo": "GET",
+      "ruta": "/api/usuarios",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 481,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Listado JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-26",
+      "escenario": "DEP-26 Consulta bibliotecario: /api/lectores",
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 370,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Listado JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-27",
+      "escenario": "DEP-27 Consulta bibliotecario: /api/areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 371,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Listado JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-28",
+      "escenario": "DEP-28 Consulta bibliotecario: /api/areas/activas",
+      "metodo": "GET",
+      "ruta": "/api/areas/activas",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 405,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Listado JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-29",
+      "escenario": "DEP-29 Consulta bibliotecario: /api/recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 413,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Listado JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-30",
+      "escenario": "DEP-30 Perfil propio bibliotecario",
+      "metodo": "GET",
+      "ruta": "/api/lectores/mi-perfil",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 390,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Identidad propia",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-31",
+      "escenario": "DEP-31 Perfil propio lector",
+      "metodo": "GET",
+      "ruta": "/api/lectores/mi-perfil",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 366,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Identidad propia",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-32",
+      "escenario": "DEP-32 Lector consulta recursos",
+      "metodo": "GET",
+      "ruta": "/api/recursos",
+      "esperado": 200,
+      "obtenido": 200,
+      "error_red": null,
+      "tiempo_ms": 371,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Listado JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-33",
+      "escenario": "DEP-33 Lector sin permiso: /api/usuarios",
+      "metodo": "GET",
+      "ruta": "/api/usuarios",
+      "esperado": 403,
+      "obtenido": 403,
+      "error_red": null,
+      "tiempo_ms": 348,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-34",
+      "escenario": "DEP-34 Lector sin permiso: /api/lectores",
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "esperado": 403,
+      "obtenido": 403,
+      "error_red": null,
+      "tiempo_ms": 348,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-35",
+      "escenario": "DEP-35 Lector sin permiso: /api/areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 403,
+      "obtenido": 403,
+      "error_red": null,
+      "tiempo_ms": 342,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-36",
+      "escenario": "DEP-36 Lector sin permiso: /api/prestamos",
+      "metodo": "GET",
+      "ruta": "/api/prestamos",
+      "esperado": 403,
+      "obtenido": 403,
+      "error_red": null,
+      "tiempo_ms": 372,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-37",
+      "escenario": "DEP-37 Bibliotecario sin permiso: /api/prestamos/mis-prestamos",
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "esperado": 403,
+      "obtenido": 403,
+      "error_red": null,
+      "tiempo_ms": 342,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "DEP-38",
+      "escenario": "DEP-38 Bibliotecario sin permiso: /api/prestamos/mis-alertas",
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-alertas",
+      "esperado": 403,
+      "obtenido": 403,
+      "error_red": null,
+      "tiempo_ms": 383,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin hashes de password",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    }
+  ],
+  "pendientes": []
+}

@@ -1,0 +1,476 @@
+{
+  "modulo": "Areas",
+  "ejecucion_utc": "2026-10-10T18:43:55.344Z",
+  "api": "http://localhost:3000",
+  "herramienta": "Newman 6.2.2",
+  "resumen": {
+    "solicitudes": 16,
+    "casos_aprobados": 16,
+    "casos_fallidos": 0
+  },
+  "casos": [
+    {
+      "id": "AR-01",
+      "escenario": "AR-01 Sin token",
+      "modulo": "Areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 14,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-02",
+      "escenario": "AR-02 Lector sin permiso",
+      "modulo": "Areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 12,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-03",
+      "escenario": "AR-03 Listar areas",
+      "modulo": "Areas",
+      "metodo": "GET",
+      "ruta": "/api/areas",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 34,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Lista JSON",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-04",
+      "escenario": "AR-04 Nombre vacio",
+      "modulo": "Areas",
+      "metodo": "POST",
+      "ruta": "/api/areas",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 18,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-05",
+      "escenario": "AR-05 Nombre no textual",
+      "modulo": "Areas",
+      "metodo": "POST",
+      "ruta": "/api/areas",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 20,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-06",
+      "escenario": "AR-06 Crear area",
+      "modulo": "Areas",
+      "metodo": "POST",
+      "ruta": "/api/areas",
+      "esperado": 201,
+      "obtenido": 201,
+      "tiempo_ms": 21,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-07",
+      "escenario": "AR-07 Nombre duplicado",
+      "modulo": "Areas",
+      "metodo": "POST",
+      "ruta": "/api/areas",
+      "esperado": 409,
+      "obtenido": 409,
+      "tiempo_ms": 22,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-08",
+      "escenario": "AR-08 Actualizar area",
+      "modulo": "Areas",
+      "metodo": "PUT",
+      "ruta": "/api/areas/7",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 102,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-09",
+      "escenario": "AR-09 ID invalido",
+      "modulo": "Areas",
+      "metodo": "PUT",
+      "ruta": "/api/areas/no-numero",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 9,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-10",
+      "escenario": "AR-10 Area inexistente",
+      "modulo": "Areas",
+      "metodo": "PUT",
+      "ruta": "/api/areas/2147483647",
+      "esperado": 404,
+      "obtenido": 404,
+      "tiempo_ms": 16,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 404",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-11",
+      "escenario": "AR-11 Desactivar area",
+      "modulo": "Areas",
+      "metodo": "PATCH",
+      "ruta": "/api/areas/7/estado",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 12,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado inactivo",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-12",
+      "escenario": "AR-12 Activas excluyen area desactivada",
+      "modulo": "Areas",
+      "metodo": "GET",
+      "ruta": "/api/areas/activas",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 16,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Lista JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Area desactivada excluida",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-13",
+      "escenario": "AR-13 Reactivar area",
+      "modulo": "Areas",
+      "metodo": "PATCH",
+      "ruta": "/api/areas/7/estado",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 16,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-14",
+      "escenario": "AR-14 Lector sin permiso de modificar",
+      "modulo": "Areas",
+      "metodo": "POST",
+      "ruta": "/api/areas",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 17,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-15",
+      "escenario": "AR-15 Lector sin permiso de modificar",
+      "modulo": "Areas",
+      "metodo": "PUT",
+      "ruta": "/api/areas/7",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 18,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "AR-16",
+      "escenario": "AR-16 Lector sin permiso de modificar",
+      "modulo": "Areas",
+      "metodo": "PATCH",
+      "ruta": "/api/areas/7/estado",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 10,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin credenciales en respuesta",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ]
+    }
+  ],
+  "limpieza": {
+    "completada": true,
+    "personas_temporales_eliminadas": 8,
+    "prestamos_temporales_eliminados": 3,
+    "recursos_temporales_eliminados": 2,
+    "areas_temporales_eliminadas": 1
+  }
+}

@@ -1,0 +1,592 @@
+{
+  "coleccion": "E3 - Salud y Auth",
+  "ejecucion_utc": "2026-10-10T18:34:28.056Z",
+  "api": "http://localhost:3000",
+  "herramienta": "Newman 6.2.2",
+  "resumen": {
+    "solicitudes": 23,
+    "casos_aprobados": 23,
+    "casos_fallidos": 0,
+    "comprobaciones": 74,
+    "comprobaciones_fallidas": 0,
+    "fallos_newman": 0
+  },
+  "casos": [
+    {
+      "id": "S-01",
+      "escenario": "S-01 Salud p?blica",
+      "metodo": "GET",
+      "ruta": "/api/v1/salud",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 39,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin contrase?as ni hashes",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado ok",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "S-02",
+      "escenario": "S-02 Ruta inexistente",
+      "metodo": "GET",
+      "ruta": "/api/v1/no-existe-e3",
+      "esperado": 404,
+      "obtenido": 404,
+      "tiempo_ms": 12,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 404",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "S-03",
+      "escenario": "S-03 JSON mal formado",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 18,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "P-01",
+      "escenario": "P-01 Login v?lido de bibliotecario",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 194,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Token JWT",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Rol BIBLIOTECARIO",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "P-02",
+      "escenario": "P-02 Contrase?a incorrecta",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 96,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Credenciales incorrectas",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-03",
+      "escenario": "A-03 Login v?lido de lector",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 200,
+      "obtenido": 200,
+      "tiempo_ms": 135,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Token JWT",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Rol LECTOR",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-04",
+      "escenario": "A-04 Login sin contrase?a",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 18,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-05",
+      "escenario": "A-05 Login con tipos inv?lidos",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 16,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-06",
+      "escenario": "A-06 Usuario inexistente",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 27,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-07",
+      "escenario": "A-07 Bibliotecario inactivo",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 127,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-08",
+      "escenario": "A-08 Bibliotecario bloqueado",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 160,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-09",
+      "escenario": "A-09 Lector inactivo",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 177,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-10",
+      "escenario": "A-10 Lector bloqueado",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 110,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-11",
+      "escenario": "A-11 Contrase?a incorrecta de cuenta inactiva",
+      "metodo": "POST",
+      "ruta": "/api/auth/login",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 92,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-12",
+      "escenario": "A-12 Registro sin token",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 11,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-13",
+      "escenario": "A-13 Registro con token inv?lido",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 26,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-14",
+      "escenario": "A-14 Registro con token vencido",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 401,
+      "obtenido": 401,
+      "tiempo_ms": 15,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 401",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-15",
+      "escenario": "A-15 Lector no puede registrar cuentas",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 403,
+      "obtenido": 403,
+      "tiempo_ms": 11,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 403",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-16",
+      "escenario": "A-16 Registro sin datos obligatorios",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 11,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-17",
+      "escenario": "A-17 Registro con correo inv?lido",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 10,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-18",
+      "escenario": "A-18 Registro con rol inv?lido",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 400,
+      "obtenido": 400,
+      "tiempo_ms": 15,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 400",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-19",
+      "escenario": "A-19 Registro v?lido de cuenta ficticia",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 201,
+      "obtenido": 201,
+      "tiempo_ms": 129,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Sin contrase?as ni hashes",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Cuenta creada",
+          "estado": "Aprobado"
+        }
+      ]
+    },
+    {
+      "id": "A-20",
+      "escenario": "A-20 Registro duplicado",
+      "metodo": "POST",
+      "ruta": "/api/auth/register",
+      "esperado": 409,
+      "obtenido": 409,
+      "tiempo_ms": 13,
+      "estado": "Aprobado",
+      "pruebas": [
+        {
+          "nombre": "HTTP 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado sin token",
+          "estado": "Aprobado"
+        }
+      ]
+    }
+  ],
+  "limpieza": {
+    "completada": true,
+    "personas_temporales_eliminadas": 7
+  }
+}

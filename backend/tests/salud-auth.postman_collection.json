@@ -1,0 +1,864 @@
+{
+  "info": {
+    "name": "E3 - Salud y Auth",
+    "description": "API local real; credenciales y tokens mediante variables. Ejecutar con pnpm test:salud-auth para generar cuentas temporales y limpiar los datos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "url_backend",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Salud y errores generales",
+      "item": [
+        {
+          "name": "S-01 Salud p?blica",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/v1/salud"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Sin contrase?as ni hashes', () => { const text = pm.response.text(); pm.expect(text).not.to.include(pm.environment.get('test_password')); pm.expect(text).not.to.include('password_hash'); });",
+                  "pm.test('Estado ok', () => pm.expect(pm.response.json().estado).to.eql('ok'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "S-02 Ruta inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{url_backend}}/api/v1/no-existe-e3"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "S-03 JSON mal formado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{invalido",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "P-01 Login v?lido de bibliotecario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{bibliotecario_username}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Token JWT', () => pm.expect(pm.response.json().token).to.match(/^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/));",
+                  "pm.test('Rol BIBLIOTECARIO', () => pm.expect(pm.response.json().user.rol).to.eql('BIBLIOTECARIO'));",
+                  "if (pm.response.code === 200) pm.environment.set('token_bibliotecario', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "P-02 Contrase?a incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{bibliotecario_username}}\",\"password\":\"{{password_incorrecto}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });",
+                  "pm.test('Credenciales incorrectas', () => pm.expect(pm.response.json().error).to.eql('Credenciales incorrectas'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-03 Login v?lido de lector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{lector_username}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Token JWT', () => pm.expect(pm.response.json().token).to.match(/^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/));",
+                  "pm.test('Rol LECTOR', () => pm.expect(pm.response.json().user.rol).to.eql('LECTOR'));",
+                  "if (pm.response.code === 200) pm.environment.set('token_lector', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-04 Login sin contrase?a",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{lector_username}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-05 Login con tipos inv?lidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":123,\"password\":[]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-06 Usuario inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{username_inexistente}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-07 Bibliotecario inactivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{bibliotecario_inactivo}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-08 Bibliotecario bloqueado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{bibliotecario_bloqueado}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-09 Lector inactivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{lector_inactivo}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-10 Lector bloqueado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{lector_bloqueado}}\",\"password\":\"{{test_password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-11 Contrase?a incorrecta de cuenta inactiva",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{lector_inactivo}}\",\"password\":\"{{password_incorrecto}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-12 Registro sin token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-13 Registro con token inv?lido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_invalido}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-14 Registro con token vencido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_expirado}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-15 Lector no puede registrar cuentas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_lector}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-16 Registro sin datos obligatorios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-17 Registro con correo inv?lido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"incorrecto\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-18 Registro con rol inv?lido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"OTRO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-19 Registro v?lido de cuenta ficticia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Sin contrase?as ni hashes', () => { const text = pm.response.text(); pm.expect(text).not.to.include(pm.environment.get('test_password')); pm.expect(text).not.to.include('password_hash'); });",
+                  "pm.test('Cuenta creada', () => pm.expect(pm.response.json().data.login.username).to.eql(pm.environment.get('registro_username')));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "A-20 Registro duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_bibliotecario}}"
+              }
+            ],
+            "url": "{{url_backend}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ci\":\"{{registro_ci}}\",\"nombres\":\"Prueba\",\"ap\":\"Automatizada\",\"am\":\"Auth\",\"correo\":\"{{registro_correo}}\",\"username\":\"{{registro_username}}\",\"password\":\"{{test_password}}\",\"rol\":\"BIBLIOTECARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                  "pm.test('Error informado sin token', () => { const data = pm.response.json(); pm.expect(data.error).to.be.a('string').and.not.empty; pm.expect(data).not.to.have.property('token'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}
