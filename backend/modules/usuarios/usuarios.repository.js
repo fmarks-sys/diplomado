@@ -206,7 +206,42 @@ export const findRoleById = async (client, rolId) => {
 };
 
 
-// CREAR PERSONA NUEVA + LOGIN
+// El rol de acceso y el registro de lector son distintos. Reutilizar el
+// registro existente sin cambiar su RU, tipo ni estado (incluidas sanciones).
+const asegurarLector = async (client, personaId, role, data) => {
+    if (role.nombre !== 'LECTOR') return;
+
+    const existente = await client.query(
+        'SELECT id FROM lectores WHERE persona_id = $1',
+        [personaId]
+    );
+    if (existente.rows.length > 0) return;
+
+    const tipo = String(data.tipo_lector ?? '').trim().toUpperCase();
+    if (!['ESTUDIANTE', 'DOCENTE', 'EXTERNO'].includes(tipo)) {
+        throw new Error('Tipo de lector requerido: ESTUDIANTE, DOCENTE o EXTERNO');
+    }
+    const ru = String(data.ru ?? '').trim() || null;
+    if (ru && ru.length > 20) {
+        throw new Error('El RU no puede superar 20 caracteres');
+    }
+
+    try {
+        await client.query(
+            `INSERT INTO lectores (persona_id, ru, tipo_lector)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (persona_id) DO NOTHING`,
+            [personaId, ru, tipo]
+        );
+    } catch (error) {
+        if (error.code === '23505') {
+            throw new Error('El RU ya está registrado para otro lector');
+        }
+        throw error;
+    }
+};
+
+// CREAR PERSONA NUEVA + LOGIN (+ LECTOR SI CORRESPONDE)
 
 export const createNewUser = async (data) => {
 
@@ -259,6 +294,7 @@ export const createNewUser = async (data) => {
 
         const persona = personaResult.rows[0];
 
+        await asegurarLector(client, persona.id, role, data);
 
         // Crear login
 
@@ -339,6 +375,7 @@ export const createLoginForExistingPerson = async (
             throw new Error('El rol está inactivo');
         }
 
+        await asegurarLector(client, personaId, role, data);
 
         const result = await client.query(
             `
@@ -414,6 +451,11 @@ export const updateUser = async (loginId, data) => {
         const personaId =
             currentResult.rows[0].persona_id;
 
+        const role = await findRoleById(client, data.rol_id);
+        if (!role) throw new Error('El rol no existe');
+        if (role.estado !== 'ACTIVO') throw new Error('El rol está inactivo');
+
+        await asegurarLector(client, personaId, role, data);
 
         // Actualizar persona
 

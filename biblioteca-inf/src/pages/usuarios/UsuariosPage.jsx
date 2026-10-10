@@ -27,7 +27,9 @@ const UsuariosPage = () => {
         telefono: '',
         username: '',
         password: '',
-        rol_id: '1'
+        rol_id: '1',
+        tipo_lector: '',
+        ru: ''
     };
 
 
@@ -193,6 +195,11 @@ const UsuariosPage = () => {
 
         e.preventDefault();
 
+        if (tipoRegistro === 'NUEVO' && form.rol_id === '2' && !form.tipo_lector) {
+            showModal('Selecciona el tipo de lector', 'error');
+            return;
+        }
+
         try {
 
             // -------------------------
@@ -253,7 +260,9 @@ const UsuariosPage = () => {
                     {
                         username: form.username,
                         password: form.password,
-                        rol_id: Number(form.rol_id)
+                        rol_id: Number(form.rol_id),
+                        tipo_lector: form.tipo_lector,
+                        ru: form.ru
                     }
                 );
             }
@@ -291,7 +300,9 @@ const UsuariosPage = () => {
 
             data: {
                 ...usuario,
-                rol_id: String(usuario.rol_id)
+                rol_id: String(usuario.rol_id),
+                tipo_lector: '',
+                ru: ''
             }
         });
     };
@@ -303,6 +314,10 @@ const UsuariosPage = () => {
 
             const data = editModal.data;
 
+            if (data.rol_id === '2' && !data.es_lector && !data.tipo_lector) {
+                showModal('Selecciona el tipo de lector', 'error');
+                return;
+            }
             if (
                 !data.ci ||
                 !data.nombres ||
@@ -331,7 +346,9 @@ const UsuariosPage = () => {
                     correo: data.correo,
                     telefono: data.telefono,
                     username: data.username,
-                    rol_id: Number(data.rol_id)
+                    rol_id: Number(data.rol_id),
+                    tipo_lector: data.tipo_lector,
+                    ru: data.ru
                 }
             );
 
@@ -767,7 +784,7 @@ const UsuariosPage = () => {
                                 <div>
 
                                     <label>
-                                        ID Persona / Lector *
+                                        ID de persona *
                                     </label>
 
                                     <input
@@ -782,8 +799,7 @@ const UsuariosPage = () => {
                                     />
 
                                     <small>
-                                        Utilice el ID de una persona
-                                        ya registrada como lector.
+                                        Utilice persona_id, no el ID del lector.
                                     </small>
 
                                 </div>
@@ -842,6 +858,34 @@ const UsuariosPage = () => {
 
                             </div>
 
+
+                            {form.rol_id === '2' && (
+                                <>
+                                    <h4>Datos de lector</h4>
+                                    {tipoRegistro === 'EXISTENTE' && (
+                                        <small>Si la persona ya es lector, se conservarán sus datos actuales.
+                                            Si no lo es, selecciona el tipo para registrarla.</small>
+                                    )}
+                                    <div className="usuario-grid">
+                                        <div>
+                                            <label htmlFor="crear-tipo-lector">Tipo de lector {tipoRegistro === 'NUEVO' ? '*' : '(si no existe)'}</label>
+                                            <select id="crear-tipo-lector" name="tipo_lector"
+                                                value={form.tipo_lector} onChange={handleChange}
+                                                required={tipoRegistro === 'NUEVO'}>
+                                                <option value="">Seleccionar tipo</option>
+                                                <option value="ESTUDIANTE">Estudiante</option>
+                                                <option value="DOCENTE">Docente</option>
+                                                <option value="EXTERNO">Externo</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="crear-ru">RU (opcional)</label>
+                                            <input id="crear-ru" name="ru" maxLength={20}
+                                                value={form.ru} onChange={handleChange} />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <div className="modal-actions">
 
@@ -990,6 +1034,29 @@ const UsuariosPage = () => {
 
                             </div>
 
+
+                            {editModal.data.rol_id === '2' && !editModal.data.es_lector && (
+                                <>
+                                    <h4>Registrar como lector</h4>
+                                    <div className="usuario-grid">
+                                        <div>
+                                            <label htmlFor="editar-tipo-lector">Tipo de lector *</label>
+                                            <select id="editar-tipo-lector" name="tipo_lector"
+                                                value={editModal.data.tipo_lector} onChange={handleEditChange}>
+                                                <option value="">Seleccionar tipo</option>
+                                                <option value="ESTUDIANTE">Estudiante</option>
+                                                <option value="DOCENTE">Docente</option>
+                                                <option value="EXTERNO">Externo</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="editar-ru">RU (opcional)</label>
+                                            <input id="editar-ru" name="ru" maxLength={20}
+                                                value={editModal.data.ru} onChange={handleEditChange} />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <div className="modal-actions">
 

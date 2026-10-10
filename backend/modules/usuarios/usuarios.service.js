@@ -162,7 +162,9 @@ export const createFromPerson = async (
             {
                 username: data.username,
                 password_hash: passwordHash,
-                rol_id: data.rol_id
+                rol_id: data.rol_id,
+                tipo_lector: data.tipo_lector,
+                ru: data.ru
             }
         );
 

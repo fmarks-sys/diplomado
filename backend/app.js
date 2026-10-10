@@ -14,6 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 //  LUEGO las rutas
+app.get('/api/v1/salud', (_req, res) => {
+    res.status(200).json({ estado: 'ok' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/areas', areasRoutes);
