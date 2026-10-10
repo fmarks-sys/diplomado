@@ -16,7 +16,7 @@ router.get('/mi-perfil', verifyToken, controller.getMiPerfil);
 
 router.get('/',isAdmin, verifyToken, controller.getLectores);
 router.post('/',isAdmin, verifyToken, controller.createLector);
-router.put('/:id', verifyToken, controller.updateLector);
+router.put('/:id', verifyToken, isAdmin, controller.updateLector);
 router.delete('/:id',isAdmin, verifyToken, controller.deleteLector);
 router.patch('/estado/:id',isAdmin, verifyToken, controller.cambiarEstado);
 

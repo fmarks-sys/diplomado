@@ -100,11 +100,11 @@ export const createUser = async (data) => {
         );
 
         if (!role) {
-            throw new Error('El rol no existe');
+            throw Object.assign(new Error('El rol no existe'), { status: 400 });
         }
 
         if (role.estado !== 'ACTIVO') {
-            throw new Error('El rol está inactivo');
+            throw Object.assign(new Error('El rol está inactivo'), { status: 409 });
         }
 
 
@@ -210,11 +210,11 @@ export const createLoginForPerson = async (
         );
 
         if (!role) {
-            throw new Error('El rol no existe');
+            throw Object.assign(new Error('El rol no existe'), { status: 400 });
         }
 
         if (role.estado !== 'ACTIVO') {
-            throw new Error('El rol está inactivo');
+            throw Object.assign(new Error('El rol está inactivo'), { status: 409 });
         }
 
 

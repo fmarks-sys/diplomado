@@ -1,5 +1,24 @@
 import * as authService from './auth.service.js';
 
+const responderError = (response, error, registro = false) => {
+    let status = error.status || 500;
+    let message = error.message;
+
+    if (registro && error.code === '23505') {
+        status = 409;
+        message = 'CI, correo, username o cuenta de persona ya registrados';
+    } else if (registro && ['23502', '23503', '23514', '22001', '22P02'].includes(error.code)) {
+        status = 400;
+        message = 'Datos de registro inválidos';
+    }
+
+    if (status === 500) {
+        console.error(error);
+        message = 'Error interno del servidor';
+    }
+
+    return response.status(status).json({ error: message });
+};
 
 export const register = async (request, response) => {
 
@@ -16,11 +35,7 @@ export const register = async (request, response) => {
 
     } catch (error) {
 
-        console.error(error);
-
-        return response.status(400).json({
-            error: error.message
-        });
+        return responderError(response, error, true);
     }
 };
 
@@ -30,8 +45,8 @@ export const login = async (request, response) => {
     try {
 
         const data = await authService.login(
-            request.body.username,
-            request.body.password
+            request.body?.username,
+            request.body?.password
         );
 
         return response.status(200).json({
@@ -41,10 +56,6 @@ export const login = async (request, response) => {
 
     } catch (error) {
 
-        console.error(error);
-
-        return response.status(401).json({
-            error: error.message
-        });
+        return responderError(response, error);
     }
 };

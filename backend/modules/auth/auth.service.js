@@ -10,22 +10,22 @@ import {
     updateLastAccess
 } from './auth.repository.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
 
 // REGISTRAR USUARIO DEL SISTEMA
 
 export const register = async (data) => {
 
-    if (
-        !data.ci ||
-        !data.nombres ||
-        !data.ap ||
-        !data.am ||
-        !data.correo ||
-        !data.username ||
-        !data.password ||
-        !data.rol
-    ) {
-        throw new Error('Faltan datos obligatorios');
+    const obligatorios = ['ci', 'nombres', 'ap', 'am', 'correo', 'username', 'password', 'rol'];
+    if (!data || typeof data !== 'object' || Array.isArray(data)
+        || obligatorios.some((campo) => typeof data[campo] !== 'string' || !data[campo].trim())) {
+        throw errorHttp(400, 'Faltan datos obligatorios o tienen un formato inválido');
+    }
+    if (data.telefono != null && typeof data.telefono !== 'string') {
+        throw errorHttp(400, 'Teléfono debe ser texto');
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo)) {
+        throw errorHttp(400, 'Correo electrónico inválido');
     }
 
 
@@ -39,7 +39,7 @@ export const register = async (data) => {
     ];
 
     if (!rolesPermitidos.includes(rol)) {
-        throw new Error('Rol no válido');
+        throw errorHttp(400, 'Rol no válido');
     }
 
 
@@ -49,7 +49,7 @@ export const register = async (data) => {
         await findUserByUsername(data.username);
 
     if (existingUsername) {
-        throw new Error(
+        throw errorHttp(409,
             'El username ya está registrado'
         );
     }
@@ -76,7 +76,7 @@ export const register = async (data) => {
             personaByEmail &&
             personaByCi.id !== personaByEmail.id
         ) {
-            throw new Error(
+            throw errorHttp(409,
                 'El CI y correo pertenecen a personas diferentes'
             );
         }
@@ -138,9 +138,10 @@ export const login = async (
     password
 ) => {
 
-    if (!username || !password) {
+    if (typeof username !== 'string' || !username.trim()
+        || typeof password !== 'string' || !password.trim()) {
 
-        throw new Error(
+        throw errorHttp(400,
             'Username y password son obligatorios'
         );
     }
@@ -154,27 +155,11 @@ export const login = async (
 
     if (!user) {
 
-        throw new Error(
+        throw errorHttp(401,
             'Credenciales incorrectas'
         );
     }
 
-
-    // Estado
-
-    if (user.estado_login !== 'ACTIVO') {
-
-        if (user.estado_login === 'BLOQUEADO') {
-
-            throw new Error(
-                'La cuenta está bloqueada'
-            );
-        }
-
-        throw new Error(
-            'La cuenta está inactiva'
-        );
-    }
 
     // Password
 
@@ -187,11 +172,22 @@ export const login = async (
 
     if (!validPassword) {
 
-        throw new Error(
+        throw errorHttp(401,
             'Credenciales incorrectas'
         );
     }
 
+
+    // Verificar el estado solo después de validar las credenciales.
+    if (user.estado_login !== 'ACTIVO') {
+        const error = new Error(
+            user.estado_login === 'BLOQUEADO'
+                ? 'La cuenta está bloqueada'
+                : 'La cuenta está inactiva'
+        );
+        error.status = 403;
+        throw error;
+    }
 
     // JWT
 
