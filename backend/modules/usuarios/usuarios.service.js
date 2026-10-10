@@ -1,318 +1,115 @@
-import bcrypt from 'bcryptjs';
-
+﻿import bcrypt from 'bcryptjs';
 import * as repository from './usuarios.repository.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
 
-// LISTAR
-
-export const getAll = async () => {
-
-    return await repository.findAll();
+const validarId = (id, campo = 'ID de usuario') => {
+    if (!['string', 'number'].includes(typeof id) || !/^\d+$/.test(String(id))
+        || !Number.isInteger(Number(id)) || Number(id) < 1 || Number(id) > 2147483647) {
+        throw errorHttp(400, `${campo} inválido`);
+    }
 };
 
+const validarDatos = (data, campos) => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)
+        || campos.some((campo) => typeof data[campo] !== 'string' || !data[campo].trim())) {
+        throw errorHttp(400, 'Faltan datos obligatorios o tienen un formato inválido');
+    }
+    validarId(data.rol_id, 'ID de rol');
+    if (data.telefono != null && typeof data.telefono !== 'string') {
+        throw errorHttp(400, 'Teléfono debe ser texto');
+    }
+    if (data.correo != null && (typeof data.correo !== 'string'
+        || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo))) {
+        throw errorHttp(400, 'Correo electrónico inválido');
+    }
+};
 
-// OBTENER UNO
+const camposPersonales = ['ci', 'nombres', 'ap', 'am', 'correo', 'username'];
+
+export const getAll = async () => repository.findAll();
 
 export const getById = async (id) => {
-
+    validarId(id);
     const user = await repository.findById(id);
-
-    if (!user) {
-        throw new Error('Usuario no encontrado');
-    }
-
+    if (!user) throw errorHttp(404, 'Usuario no encontrado');
     return user;
 };
 
-
-// CREAR USUARIO NUEVO
-// Persona todavía NO existe.
-
+// Persona nueva: conservar la creación transaccional de persona, login y lector.
 export const create = async (data) => {
-
-    if (
-        !data.ci ||
-        !data.nombres ||
-        !data.ap ||
-        !data.am ||
-        !data.correo ||
-        !data.username ||
-        !data.password ||
-        !data.rol_id
-    ) {
-        throw new Error('Faltan datos obligatorios');
+    validarDatos(data, [...camposPersonales, 'password']);
+    if (await repository.findPersonByCi(data.ci)) {
+        throw errorHttp(409, 'Ya existe una persona con ese CI');
     }
-
-
-    const personCi =
-        await repository.findPersonByCi(data.ci);
-
-    if (personCi) {
-        throw new Error(
-            'Ya existe una persona con ese CI'
-        );
+    if (await repository.findPersonByEmail(data.correo)) {
+        throw errorHttp(409, 'Ya existe una persona con ese correo');
     }
-
-
-    const personEmail =
-        await repository.findPersonByEmail(
-            data.correo
-        );
-
-    if (personEmail) {
-        throw new Error(
-            'Ya existe una persona con ese correo'
-        );
+    if (await repository.findByUsername(data.username)) {
+        throw errorHttp(409, 'El username ya está registrado');
     }
-
-
-    const username =
-        await repository.findByUsername(
-            data.username
-        );
-
-    if (username) {
-        throw new Error(
-            'El username ya está registrado'
-        );
-    }
-
-
-    const passwordHash =
-        await bcrypt.hash(
-            data.password,
-            10
-        );
-
-
-    return await repository.createNewUser({
+    const passwordHash = await bcrypt.hash(data.password, 10);
+    return repository.createNewUser({
         ...data,
-
         correo: data.correo.toLowerCase(),
-
         password_hash: passwordHash
     });
 };
 
-
-// CREAR USUARIO DESDE PERSONA/LECTOR EXISTENTE
-
-export const createFromPerson = async (
-    personaId,
-    data
-) => {
-
-    if (
-        !data.username ||
-        !data.password ||
-        !data.rol_id
-    ) {
-        throw new Error(
-            'Username, password y rol son obligatorios'
-        );
+export const createFromPerson = async (personaId, data) => {
+    validarId(personaId, 'ID de persona');
+    validarDatos(data, ['username', 'password']);
+    const person = await repository.findPersonById(personaId);
+    if (!person) throw errorHttp(404, 'La persona no existe');
+    if (await repository.findLoginByPersonId(personaId)) {
+        throw errorHttp(409, 'Esta persona ya tiene una cuenta de usuario');
     }
-
-
-    const person =
-        await repository.findPersonById(
-            personaId
-        );
-
-    if (!person) {
-        throw new Error(
-            'La persona no existe'
-        );
+    if (await repository.findByUsername(data.username)) {
+        throw errorHttp(409, 'El username ya está registrado');
     }
-
-
-    const existingLogin =
-        await repository.findLoginByPersonId(
-            personaId
-        );
-
-    if (existingLogin) {
-        throw new Error(
-            'Esta persona ya tiene una cuenta de usuario'
-        );
-    }
-
-
-    const existingUsername =
-        await repository.findByUsername(
-            data.username
-        );
-
-    if (existingUsername) {
-        throw new Error(
-            'El username ya está registrado'
-        );
-    }
-
-
-    const passwordHash =
-        await bcrypt.hash(
-            data.password,
-            10
-        );
-
-
-    const login =
-        await repository.createLoginForExistingPerson(
-            personaId,
-            {
-                username: data.username,
-                password_hash: passwordHash,
-                rol_id: data.rol_id,
-                tipo_lector: data.tipo_lector,
-                ru: data.ru
-            }
-        );
-
-
-    return {
-        persona: person,
-        login
-    };
+    const passwordHash = await bcrypt.hash(data.password, 10);
+    const login = await repository.createLoginForExistingPerson(personaId, {
+        username: data.username,
+        password_hash: passwordHash,
+        rol_id: data.rol_id,
+        tipo_lector: data.tipo_lector,
+        ru: data.ru
+    });
+    return { persona: person, login };
 };
 
-
-// MODIFICAR
-
-export const update = async (
-    id,
-    data
-) => {
-
-    const user =
-        await repository.findById(id);
-
-    if (!user) {
-        throw new Error(
-            'Usuario no encontrado'
-        );
+export const update = async (id, data) => {
+    validarId(id);
+    validarDatos(data, camposPersonales);
+    await getById(id);
+    const username = await repository.findByUsername(data.username);
+    if (username && username.id !== Number(id)) {
+        throw errorHttp(409, 'El username ya está en uso');
     }
-
-
-    if (
-        !data.ci ||
-        !data.nombres ||
-        !data.ap ||
-        !data.am ||
-        !data.correo ||
-        !data.username ||
-        !data.rol_id
-    ) {
-        throw new Error(
-            'Faltan datos obligatorios'
-        );
-    }
-
-
-    const username =
-        await repository.findByUsername(
-            data.username
-        );
-
-
-    if (
-        username &&
-        username.id !== Number(id)
-    ) {
-        throw new Error(
-            'El username ya está en uso'
-        );
-    }
-
-
-    await repository.updateUser(
-        id,
-        data
-    );
-
-
-    return await repository.findById(id);
+    await repository.updateUser(id, data);
+    return getById(id);
 };
 
-
-// CAMBIAR PASSWORD
-
-export const changePassword = async (
-    id,
-    password
-) => {
-
-    const user =
-        await repository.findById(id);
-
-    if (!user) {
-        throw new Error(
-            'Usuario no encontrado'
-        );
+export const changePassword = async (id, password) => {
+    validarId(id);
+    if (typeof password !== 'string' || !password.trim()) {
+        throw errorHttp(400, 'La nueva contraseña es obligatoria');
     }
-
-
-    if (!password) {
-        throw new Error(
-            'La nueva contraseña es obligatoria'
-        );
-    }
-
-
-    const passwordHash =
-        await bcrypt.hash(
-            password,
-            10
-        );
-
-
-    await repository.updatePassword(
-        id,
-        passwordHash
-    );
-
-
-    return {
-        message: 'Contraseña actualizada'
-    };
+    await getById(id);
+    const passwordHash = await bcrypt.hash(password, 10);
+    const actualizado = await repository.updatePassword(id, passwordHash);
+    if (!actualizado) throw errorHttp(404, 'Usuario no encontrado');
+    return { message: 'Contraseña actualizada' };
 };
 
-
-// CAMBIAR ESTADO
-
-export const changeStatus = async (
-    id,
-    estado
-) => {
-
-    const estadosPermitidos = [
-        'ACTIVO',
-        'BLOQUEADO',
-        'INACTIVO'
-    ];
-
-
-    estado = estado?.toUpperCase();
-
-
-    if (!estadosPermitidos.includes(estado)) {
-        throw new Error(
-            'Estado no válido'
-        );
+export const changeStatus = async (id, estado) => {
+    validarId(id);
+    estado = typeof estado === 'string' ? estado.toUpperCase() : '';
+    if (!['ACTIVO', 'BLOQUEADO', 'INACTIVO'].includes(estado)) {
+        throw errorHttp(400, 'Estado no válido');
     }
-
-
-    const user =
-        await repository.findById(id);
-
-    if (!user) {
-        throw new Error(
-            'Usuario no encontrado'
-        );
-    }
-
-
-    return await repository.updateStatus(
-        id,
-        estado
-    );
+    await getById(id);
+    const actualizado = await repository.updateStatus(id, estado);
+    if (!actualizado) throw errorHttp(404, 'Usuario no encontrado');
+    return actualizado;
 };

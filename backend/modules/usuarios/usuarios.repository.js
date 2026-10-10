@@ -1,5 +1,6 @@
 import { pool } from '../../config/db.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
 
 // LISTAR USUARIOS
 
@@ -217,13 +218,14 @@ const asegurarLector = async (client, personaId, role, data) => {
     );
     if (existente.rows.length > 0) return;
 
-    const tipo = String(data.tipo_lector ?? '').trim().toUpperCase();
+    const tipo = typeof data.tipo_lector === 'string' ? data.tipo_lector.trim().toUpperCase() : '';
     if (!['ESTUDIANTE', 'DOCENTE', 'EXTERNO'].includes(tipo)) {
-        throw new Error('Tipo de lector requerido: ESTUDIANTE, DOCENTE o EXTERNO');
+        throw errorHttp(400, 'Tipo de lector requerido: ESTUDIANTE, DOCENTE o EXTERNO');
     }
+    if (data.ru != null && typeof data.ru !== 'string') throw errorHttp(400, 'El RU debe ser texto');
     const ru = String(data.ru ?? '').trim() || null;
     if (ru && ru.length > 20) {
-        throw new Error('El RU no puede superar 20 caracteres');
+        throw errorHttp(400, 'El RU no puede superar 20 caracteres');
     }
 
     try {
@@ -235,7 +237,7 @@ const asegurarLector = async (client, personaId, role, data) => {
         );
     } catch (error) {
         if (error.code === '23505') {
-            throw new Error('El RU ya está registrado para otro lector');
+            throw errorHttp(409, 'El RU ya está registrado para otro lector');
         }
         throw error;
     }
@@ -258,11 +260,11 @@ export const createNewUser = async (data) => {
         );
 
         if (!role) {
-            throw new Error('El rol no existe');
+            throw errorHttp(400, 'El rol no existe');
         }
 
         if (role.estado !== 'ACTIVO') {
-            throw new Error('El rol está inactivo');
+            throw errorHttp(409, 'El rol está inactivo');
         }
 
 
@@ -368,11 +370,11 @@ export const createLoginForExistingPerson = async (
         );
 
         if (!role) {
-            throw new Error('El rol no existe');
+            throw errorHttp(400, 'El rol no existe');
         }
 
         if (role.estado !== 'ACTIVO') {
-            throw new Error('El rol está inactivo');
+            throw errorHttp(409, 'El rol está inactivo');
         }
 
         await asegurarLector(client, personaId, role, data);
@@ -444,7 +446,7 @@ export const updateUser = async (loginId, data) => {
 
 
         if (!currentResult.rows[0]) {
-            throw new Error('Usuario no encontrado');
+            throw errorHttp(404, 'Usuario no encontrado');
         }
 
 
@@ -452,8 +454,8 @@ export const updateUser = async (loginId, data) => {
             currentResult.rows[0].persona_id;
 
         const role = await findRoleById(client, data.rol_id);
-        if (!role) throw new Error('El rol no existe');
-        if (role.estado !== 'ACTIVO') throw new Error('El rol está inactivo');
+        if (!role) throw errorHttp(400, 'El rol no existe');
+        if (role.estado !== 'ACTIVO') throw errorHttp(409, 'El rol está inactivo');
 
         await asegurarLector(client, personaId, role, data);
 

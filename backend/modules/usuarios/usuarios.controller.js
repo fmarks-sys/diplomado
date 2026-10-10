@@ -1,6 +1,22 @@
 import * as service
     from './usuarios.service.js';
 
+const responderError = (res, error) => {
+    let status = error.status || 500;
+    let message = error.message;
+    if (error.code === '23505') {
+        status = 409;
+        message = 'CI, correo, username, RU o cuenta de persona ya registrados';
+    } else if (['23502', '23503', '23514', '22001', '22P02'].includes(error.code)) {
+        status = 400;
+        message = 'Datos de usuario inválidos';
+    }
+    if (status === 500) {
+        console.error(error);
+        message = 'Error interno del servidor';
+    }
+    return res.status(status).json({ error: message });
+};
 
 export const getAll = async (req, res) => {
 
@@ -13,9 +29,7 @@ export const getAll = async (req, res) => {
 
     } catch (error) {
 
-        return res.status(500).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -33,9 +47,7 @@ export const getById = async (req, res) => {
 
     } catch (error) {
 
-        return res.status(404).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -58,9 +70,7 @@ export const create = async (req, res) => {
 
     } catch (error) {
 
-        return res.status(400).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -89,9 +99,7 @@ export const createFromPerson = async (
 
     } catch (error) {
 
-        return res.status(400).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -116,9 +124,7 @@ export const update = async (req, res) => {
 
     } catch (error) {
 
-        return res.status(400).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -133,7 +139,7 @@ export const changePassword = async (
         const result =
             await service.changePassword(
                 req.params.id,
-                req.body.password
+                req.body?.password
             );
 
 
@@ -141,9 +147,7 @@ export const changePassword = async (
 
     } catch (error) {
 
-        return res.status(400).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
 
@@ -158,7 +162,7 @@ export const changeStatus = async (
         const user =
             await service.changeStatus(
                 req.params.id,
-                req.body.estado
+                req.body?.estado
             );
 
 
@@ -171,8 +175,6 @@ export const changeStatus = async (
 
     } catch (error) {
 
-        return res.status(400).json({
-            error: error.message
-        });
+        return responderError(res, error);
     }
 };
