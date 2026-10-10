@@ -1,6 +1,6 @@
 import * as service from './lectores.service.js';
 
-const responderError = (res, error, defaultStatus = 500) => {
+const responderError = (res, error, eliminacion = false) => {
     // PostgreSQL: violación de UNIQUE
     if (error.code === '23505') {
         return res.status(409).json({
@@ -8,13 +8,21 @@ const responderError = (res, error, defaultStatus = 500) => {
         });
     }
 
-    // PostgreSQL: violación de CHECK / NOT NULL / FK
-    if (['23514', '23502', '23503'].includes(error.code)) {
-        return res.status(400).json({ error: error.message });
+    // Un lector con préstamos o sanciones no puede eliminarse físicamente.
+    if (eliminacion && error.code === '23503') {
+        return res.status(409).json({
+            error: 'No se puede eliminar un lector con préstamos o sanciones asociados'
+        });
     }
 
-    return res.status(error.status || defaultStatus).json({
-        error: error.message
+    if (['23514', '23502', '23503', '22001', '22P02'].includes(error.code)) {
+        return res.status(400).json({ error: 'Datos de lector inválidos' });
+    }
+
+    const status = error.status || 500;
+    if (status === 500) console.error(error);
+    return res.status(status).json({
+        error: status === 500 ? 'Error interno del servidor' : error.message
     });
 };
 
@@ -32,7 +40,7 @@ export const createLector = async (req, res) => {
         const data = await service.addLector(req.body);
         return res.status(201).json(data);
     } catch (error) {
-        return responderError(res, error, 400);
+        return responderError(res, error);
     }
 };
 
@@ -41,7 +49,7 @@ export const updateLector = async (req, res) => {
         const data = await service.editLector(req.params.id, req.body);
         return res.json(data);
     } catch (error) {
-        return responderError(res, error, 400);
+        return responderError(res, error);
     }
 };
 
@@ -50,7 +58,7 @@ export const deleteLector = async (req, res) => {
         await service.removeLector(req.params.id);
         return res.json({ message: 'Lector eliminado' });
     } catch (error) {
-        return responderError(res, error, 400);
+        return responderError(res, error, true);
     }
 };
 
@@ -59,7 +67,7 @@ export const cambiarEstado = async (req, res) => {
         const data = await service.cambiarEstadoLector(req.params.id);
         return res.json(data);
     } catch (error) {
-        return responderError(res, error, 400);
+        return responderError(res, error);
     }
 };
 
