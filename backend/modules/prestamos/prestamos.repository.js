@@ -1,5 +1,6 @@
 import { pool } from '../../config/db.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
 // LISTAR TODOS LOS PRÉSTAMOS
 export const getAllPrestamos = async () => {
 
@@ -115,7 +116,7 @@ export const executeCreatePrestamoTx = async (
 
         if (prestamoActivo.rows.length > 0) {
 
-            throw new Error(
+            throw errorHttp(409,
                 'El lector ya tiene un préstamo activo de este recurso'
             );
         }
@@ -142,7 +143,9 @@ export const executeCreatePrestamoTx = async (
 
         if (stockResult.rows.length === 0) {
 
-            throw new Error(
+            const existente = await client.query('SELECT id FROM recursos WHERE id = $1', [recursoId]);
+            if (existente.rows.length === 0) throw errorHttp(404, 'Recurso no existe');
+            throw errorHttp(409,
                 'El recurso no tiene unidades disponibles para préstamo'
             );
         }
@@ -221,9 +224,9 @@ export const executeDevolucionTx = async (prestamoId) => {
 
         if (prestamoResult.rows.length === 0) {
 
-            throw new Error(
-                'El préstamo no existe o ya fue devuelto'
-            );
+            const existente = await client.query('SELECT id FROM prestamos WHERE id = $1', [prestamoId]);
+            if (existente.rows.length === 0) throw errorHttp(404, 'El préstamo no existe');
+            throw errorHttp(409, 'El préstamo ya fue devuelto o no admite devolución');
         }
 
 

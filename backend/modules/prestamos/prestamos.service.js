@@ -1,5 +1,14 @@
 import * as repo from './prestamos.repository.js';
 
+const errorHttp = (status, message) => Object.assign(new Error(message), { status });
+const validarId = (valor, campo, status = 400) => {
+    const numero = Number(valor);
+    if (!['string', 'number'].includes(typeof valor) || !/^\d+$/.test(String(valor))
+        || !Number.isInteger(numero) || numero < 1 || numero > 2147483647) {
+        throw errorHttp(status, `${campo} inválido`);
+    }
+    return numero;
+};
 
 // LISTAR TODOS LOS PRÉSTAMOS
 export const listPrestamos = async () => {
@@ -14,6 +23,9 @@ export const listPrestamos = async () => {
 // CREAR PRÉSTAMO
 export const addPrestamo = async (data) => {
 
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw errorHttp(400, 'Datos de préstamo requeridos');
+    }
     const {
         lector_id,
         recurso_id,
@@ -30,41 +42,22 @@ export const addPrestamo = async (data) => {
         !fecha_devolucion_prevista
     ) {
 
-        throw new Error(
+        throw errorHttp(400,
             'Lector, recurso y fecha de devolución son requeridos'
         );
     }
 
 
     // 2. VALIDAR IDs
-    const lectorId = Number(lector_id);
-    const recursoId = Number(recurso_id);
-
-
-    if (
-        !Number.isInteger(lectorId) ||
-        lectorId <= 0
-    ) {
-
-        throw new Error(
-            'ID de lector inválido'
-        );
-    }
-
-
-    if (
-        !Number.isInteger(recursoId) ||
-        recursoId <= 0
-    ) {
-
-        throw new Error(
-            'ID de recurso inválido'
-        );
-    }
+    const lectorId = validarId(lector_id, 'ID de lector');
+    const recursoId = validarId(recurso_id, 'ID de recurso');
 
 
     // 3. VALIDAR TIPO DE PRÉSTAMO
-    const tipoPrestamo = String(
+    if (tipo_prestamo != null && typeof tipo_prestamo !== 'string') {
+        throw errorHttp(400, 'Tipo de préstamo inválido');
+    }
+    const tipoPrestamo = (
         tipo_prestamo || 'DOMICILIO'
     )
         .trim()
@@ -76,7 +69,7 @@ export const addPrestamo = async (data) => {
             .includes(tipoPrestamo)
     ) {
 
-        throw new Error(
+        throw errorHttp(400,
             'Tipo de préstamo inválido'
         );
     }
@@ -88,12 +81,12 @@ export const addPrestamo = async (data) => {
 
 
     if (
-        !fechaRegex.test(
+        typeof fecha_devolucion_prevista !== 'string' || !fechaRegex.test(
             fecha_devolucion_prevista
         )
     ) {
 
-        throw new Error(
+        throw errorHttp(400,
             'La fecha debe tener formato YYYY-MM-DD'
         );
     }
@@ -127,7 +120,7 @@ export const addPrestamo = async (data) => {
         !== diaFecha
     ) {
 
-        throw new Error(
+        throw errorHttp(400,
             'Fecha de devolución inválida'
         );
     }
@@ -161,7 +154,7 @@ export const addPrestamo = async (data) => {
         < fechaHoy
     ) {
 
-        throw new Error(
+        throw errorHttp(400,
             'La fecha de devolución no puede ser anterior a hoy'
         );
     }
@@ -176,7 +169,7 @@ export const addPrestamo = async (data) => {
 
     if (!lector) {
 
-        throw new Error(
+        throw errorHttp(404,
             'Lector no existe'
         );
     }
@@ -187,7 +180,7 @@ export const addPrestamo = async (data) => {
         lector.estado !== 'ACTIVO'
     ) {
 
-        throw new Error(
+        throw errorHttp(409,
             `El lector no está habilitado para préstamos. Estado actual: ${lector.estado}`
         );
     }
@@ -202,7 +195,7 @@ export const addPrestamo = async (data) => {
 
     if (!recurso) {
 
-        throw new Error(
+        throw errorHttp(404,
             'Recurso no existe'
         );
     }
@@ -212,7 +205,7 @@ export const addPrestamo = async (data) => {
         recurso.estado !== 'DISPONIBLE'
     ) {
 
-        throw new Error(
+        throw errorHttp(409,
             `El recurso no está disponible. Estado actual: ${recurso.estado}`
         );
     }
@@ -224,7 +217,7 @@ export const addPrestamo = async (data) => {
         tipoPrestamo !== 'SALA'
     ) {
 
-        throw new Error(
+        throw errorHttp(400,
             'Las tesis solo pueden prestarse en sala'
         );
     }
@@ -240,7 +233,7 @@ export const addPrestamo = async (data) => {
         ) <= 0
     ) {
 
-        throw new Error(
+        throw errorHttp(409,
             'No hay unidades disponibles'
         );
     }
@@ -259,18 +252,7 @@ export const addPrestamo = async (data) => {
 // DEVOLVER PRÉSTAMO
 export const devolverPrestamo = async (id) => {
 
-    const prestamoId = Number(id);
-
-
-    if (
-        !Number.isInteger(prestamoId) ||
-        prestamoId <= 0
-    ) {
-
-        throw new Error(
-            'ID de préstamo inválido'
-        );
-    }
+    const prestamoId = validarId(id, 'ID de préstamo');
 
 
     return await repo.executeDevolucionTx(
@@ -284,18 +266,7 @@ export const listMisPrestamos = async (
     personaId
 ) => {
 
-    const id = Number(personaId);
-
-
-    if (
-        !Number.isInteger(id) ||
-        id <= 0
-    ) {
-
-        throw new Error(
-            'Persona inválida'
-        );
-    }
+    const id = validarId(personaId, 'Identificador de persona en el token', 401);
 
 
     await repo.updateVencidos();
@@ -312,18 +283,7 @@ export const listMisAlertas = async (
     personaId
 ) => {
 
-    const id = Number(personaId);
-
-
-    if (
-        !Number.isInteger(id) ||
-        id <= 0
-    ) {
-
-        throw new Error(
-            'Persona inválida'
-        );
-    }
+    const id = validarId(personaId, 'Identificador de persona en el token', 401);
 
 
     await repo.updateVencidos();

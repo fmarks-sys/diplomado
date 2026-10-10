@@ -6,6 +6,7 @@ import recursosRouter from './modules/recursos/recursos.routes.js';
 import lectoresRouter from './modules/lectores/lectores.routes.js';
 import prestamosRoutes from './modules/prestamos/prestamos.routes.js';
 import cors from 'cors';
+import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
 
@@ -24,5 +25,9 @@ app.use('/api/areas', areasRoutes);
 app.use('/api/recursos', recursosRouter);
 app.use('/api/lectores', lectoresRouter);
 app.use('/api/prestamos', prestamosRoutes);
+
+// Al final: rutas sin coincidencia y errores que no resolvieron los módulos.
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

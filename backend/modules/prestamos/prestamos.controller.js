@@ -1,5 +1,21 @@
 import * as service from './prestamos.service.js';
 
+const responderError = (res, error) => {
+    let status = error.status || 500;
+    let message = error.message;
+    if (error.code === '23505') {
+        status = 409;
+        message = 'El préstamo entra en conflicto con un registro existente';
+    } else if (['23502', '23503', '23514', '22001', '22P02', '22007', '22008'].includes(error.code)) {
+        status = 400;
+        message = 'Datos de préstamo inválidos';
+    }
+    if (status === 500) {
+        console.error(error);
+        message = 'Error interno del servidor';
+    }
+    return res.status(status).json({ error: message });
+};
 // GET - LISTAR TODOS LOS PRÉSTAMOS
 export const getPrestamos = async (
     req,
@@ -18,19 +34,7 @@ export const getPrestamos = async (
 
 
     } catch (error) {
-
-        console.error(
-            'Error al listar préstamos:',
-            error
-        );
-
-
-        return res
-            .status(500)
-            .json({
-                error:
-                    'Error al obtener los préstamos'
-            });
+        return responderError(res, error);
     }
 };
 
@@ -61,19 +65,7 @@ export const crearPrestamo = async (
 
 
     } catch (error) {
-
-        console.error(
-            'Error al crear préstamo:',
-            error
-        );
-
-
-        return res
-            .status(400)
-            .json({
-                error:
-                    error.message
-            });
+        return responderError(res, error);
     }
 };
 
@@ -104,19 +96,7 @@ export const devolver = async (
 
 
     } catch (error) {
-
-        console.error(
-            'Error al devolver préstamo:',
-            error
-        );
-
-
-        return res
-            .status(400)
-            .json({
-                error:
-                    error.message
-            });
+        return responderError(res, error);
     }
 };
 
@@ -168,19 +148,7 @@ export const getMisPrestamos = async (
 
 
     } catch (error) {
-
-        console.error(
-            'Error al obtener préstamos del lector:',
-            error
-        );
-
-
-        return res
-            .status(500)
-            .json({
-                error:
-                    error.message
-            });
+        return responderError(res, error);
     }
 };
 
@@ -220,18 +188,6 @@ export const getMisAlertas = async (
 
 
     } catch (error) {
-
-        console.error(
-            'Error al obtener alertas del lector:',
-            error
-        );
-
-
-        return res
-            .status(500)
-            .json({
-                error:
-                    error.message
-            });
+        return responderError(res, error);
     }
 };
