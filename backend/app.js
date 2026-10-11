@@ -6,12 +6,15 @@ import recursosRouter from './modules/recursos/recursos.routes.js';
 import lectoresRouter from './modules/lectores/lectores.routes.js';
 import prestamosRoutes from './modules/prestamos/prestamos.routes.js';
 import cors from 'cors';
+import escaneoRouter from './modules/recursos/escanear.routes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
 
 //  PRIMERO los middlewares globales
 app.use(cors());
+// Authenticate and limit image requests before parsing their larger JSON bodies.
+app.use('/api/recursos/escanear', escaneoRouter);
 app.use(express.json());
 
 //  LUEGO las rutas

@@ -10,7 +10,8 @@
     "test:salud-auth": "node tests/run-salud-auth.js",
     "test:automated": "node tests/run-salud-auth.js --completa",
     "test:deploy": "node --use-system-ca tests/run-deploy.js",
-    "test:deploy:crud": "node --use-system-ca tests/run-deploy-crud.js"
+    "test:deploy:crud": "node --use-system-ca tests/run-deploy-crud.js",
+    "test:escaneo": "node --test tests/escaneo-ia.test.js"
   },
   "keywords": [],
   "author": "",
