@@ -1,45 +1,47 @@
-# biblioteca_app
+﻿# Aplicación Biblioteca
 
-Aplicación móvil para la consulta de recursos bibliográficos (libros y tesis).
+APK de acceso exclusivo para BIBLIOTECARIO. Conecta por HTTPS a:
+https://diplomado-production-40c1.up.railway.app/api
 
+Requiere internet y Android 7.0 (API 24) o superior.
 
-## version y build
-* **Versión:** 1.0.0
-* **Build (Código de compilación):** 1
+El login envía username y password a POST /api/auth/login.
+El JWT se guarda con flutter_secure_storage; los datos de presentación se
+guardan con shared_preferences. Se eliminan los tokens antiguos guardados
+en preferencias. La sesión se restaura mientras el JWT siga vigente y
+se elimina al cerrar sesión o vencer. La API verifica la firma y los permisos.
 
-## fecha entrega
-* 31 de agosto de 2026
+El panel usa la paleta institucional UAJMS e Inter incluida en la APK.
+Muestra métricas reales, búsqueda y filtros de recursos, préstamos y lectores,
+detalles de registros y la cuenta Bibliotecario. Incluye acceso a gestión de
+recursos con búsqueda, filtros, páginas de 10 registros, detalles, creación,
+edición, cambio de estado y eliminación confirmada. Los formularios incluyen
+campos específicos de libros y tesis y áreas obtenidas de la API.
+La consulta de préstamos y lectores no incluye formularios de gestión.
+Las pantallas de historial, alertas y perfil de lector quedan fuera de las rutas.
 
-## requisitos android
-* **Compatibilidad mínima:** Android 5.0 (API 21) o superior.
-* **Optimizado para:** Android 14 / 15 (API 34/35).
+Vista previa con datos ficticios: `design/dashboard-preview.png`.
+Login: `design/login-preview.png`. Catálogo: `design/recursos-preview.png`.
+La recuperación de acceso orienta a contactar al administrador; la API actual
+no ofrece un endpoint para restablecer contraseñas desde la APK.
 
-## si necesita internet
-* **Sí.** Requiere conexión a la red local inalámbrica (Hotspot o misma red Wi-Fi) para enviar peticiones HTTP desde el celular hacia el servidor de desarrollo Node.js ejecutado en la laptop (dirección IP del entorno: `192.168.137.1:3000`).
+Desde biblioteca_app:
 
+```powershell
+flutter pub get
+flutter run
+flutter build apk --release
+```
 
-## permisos usados
-* `android.permission.INTERNET`: Configurado en el archivo `AndroidManifest.xml` para permitir que el dispositivo móvil consuma las APIs del backend.
+APK: build/app/outputs/flutter-apk/app-release.apk
 
-## instruccion de instalacion
-descargar apk e desacticvar playprotect
+Para otro backend (URL pública, sin credenciales):
 
-## credenciales de Demo
-* **Correo:** admin@uajms.edu.bo
-* **Correo:** juan@uajms.edu.bo
-* **Contraseña:** 123456
-* **Rol:** LECTOR / ESTUDIANTE
+```powershell
+flutter build apk --release --dart-define=API_URL=https://TU-BACKEND.up.railway.app
+```
 
-## funciones principales
-* **Inicio de Sesión Seguro:** Control de acceso con roles definidos a través del backend.
-* **Búsqueda de Recursos:** Exploración fluida del catálogo de tesis y libros de la biblioteca.
-* **Persistencia Local:** Uso de caché local (`shared_preferences`) para mantener las preferencias de la app y la sesión del usuario.
-* **Gestión de Préstamos:** Visualización del estado de préstamos, alertas de vencimiento y perfiles personalizados de los lectores.
+La URL admite el sufijo /api. Usa una cuenta BIBLIOTECARIO existente;
+una cuenta LECTOR será rechazada. No incluir claves JWT ni contraseñas
+del servidor en la app.
 
-
-## limitaciones conocidas
-* Por ser una versión de desarrollo local, las peticiones fallarán si el servidor Node.js no está encendido o si el celular pierde conexión con la red local de la laptop.
-* No cuenta con firma comercial, por lo que requiere omitir las advertencias del sistema de seguridad de Android (Play Protect) al instalar.
-
-## enlace a repositorio
-https://github.com/fmarks-sys/flutter_biblioteca.git

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../services/session_service.dart';
 import 'package:biblioteca_app/config/api_config.dart'; // Ajusta la ruta si es necesario
 
 class HistorialScreen extends StatefulWidget {
@@ -24,14 +24,13 @@ class _HistorialScreenState extends State<HistorialScreen> {
   Future<void> _fetchHistorial() async {
     setState(() => _isLoading = true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
+      final authHeaders = await SessionService.headers();
 
       final response = await http.get(
         Uri.parse(ApiConfig.misPrestamos),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          ...authHeaders,
         },
       );
 
@@ -96,7 +95,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: colorEstado.withOpacity(0.5), width: 1),
+                        side: BorderSide(color: colorEstado.withValues(alpha: 0.5), width: 1),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
@@ -119,7 +118,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: colorEstado.withOpacity(0.1),
+                                    color: colorEstado.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(color: colorEstado),
                                   ),
@@ -171,3 +170,4 @@ class _HistorialScreenState extends State<HistorialScreen> {
     );
   }
 }
+

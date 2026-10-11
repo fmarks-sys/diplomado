@@ -60,3 +60,9 @@ ios/Pods/
 # Variables de entorno y credenciales
 .env
 *.env
+.env.*
+!.env.example
+
+# Claves de firma
+*.jks
+*.keystore

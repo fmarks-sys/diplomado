@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../services/session_service.dart';
 import 'package:biblioteca_app/config/api_config.dart'; // Asegúrate de que la ruta coincida con la ubicación de tu archivo
 
 class RecursosScreen extends StatefulWidget {
@@ -33,19 +33,19 @@ class _RecursosScreenState extends State<RecursosScreen> {
   Future<void> _fetchRecursos() async {
     setState(() => _isLoading = true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
+      final authHeaders = await SessionService.headers();
 
       final response = await http.get(
         Uri.parse(ApiConfig.recursos), // Usas tu endpoint dinámico
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          ...authHeaders,
         },
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (!mounted) return;
         setState(() {
           _recursos = data; // Ajusta 'data' si tu API devuelve un objeto { data: [...] }
           _recursosFiltrados = data;
@@ -56,7 +56,7 @@ class _RecursosScreenState extends State<RecursosScreen> {
     } catch (e) {
       _mostrarError('Error de conexión al servidor.');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

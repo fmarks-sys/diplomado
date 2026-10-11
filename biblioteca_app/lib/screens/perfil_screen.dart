@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../services/session_service.dart';
 import 'package:biblioteca_app/config/api_config.dart';
 
 class PerfilScreen extends StatefulWidget {
@@ -25,14 +25,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
+      final authHeaders = await SessionService.headers();
 
       final response = await http.get(
         Uri.parse(ApiConfig.perfil),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          ...authHeaders,
         },
       );
 

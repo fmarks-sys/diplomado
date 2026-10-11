@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:biblioteca_app/screens/login_screen.dart';
-import 'package:biblioteca_app/screens/dashboard_screen.dart';
-import 'package:biblioteca_app/screens/recursos_screen.dart';
-import 'package:biblioteca_app/screens/historial_screen.dart';
-import 'package:biblioteca_app/screens/alertas_screen.dart';
-import 'package:biblioteca_app/screens/perfil_screen.dart';
-import 'package:biblioteca_app/screens/recursos_crud_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/recursos_screen.dart';
+import 'screens/recursos_crud_screen.dart';
+import 'screens/session_gate.dart';
+import 'theme/app_theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const BibliotecaApp());
 }
 
@@ -18,16 +18,14 @@ class BibliotecaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Mi App Biblioteca',
-      home: const LoginScreen(),
+      title: 'Biblioteca',
+      theme: AppTheme.light,
+      home: const SessionGate(child: DashboardScreen()),
       routes: {
-        '/dashboard': (context) => const DashboardScreen(),
-        '/recursos': (context) => const RecursosScreen(),
-        '/recursos-crud': (context) => const RecursosCRUDScreen(), // 👈 Nueva ruta
-        '/historial': (context) => const HistorialScreen(),
-        '/alertas': (context) => const AlertasScreen(),
-        '/perfil': (context) => const PerfilScreen(), // La agregaremos luego
-
+        '/login': (_) => const LoginScreen(),
+        '/dashboard': (_) => const SessionGate(child: DashboardScreen()),
+        '/recursos': (_) => const SessionGate(child: RecursosScreen()),
+        '/recursos-crud': (_) => const SessionGate(child: RecursosCRUDScreen()),
       },
     );
   }
