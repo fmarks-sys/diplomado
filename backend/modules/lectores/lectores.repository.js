@@ -1,4 +1,5 @@
 import { pool } from '../../config/db.js';
+import { estadoLectorSql } from '../prestamos/sanciones.js';
 
 const SELECT_LECTOR = `
     SELECT
@@ -12,7 +13,8 @@ const SELECT_LECTOR = `
         p.correo,
         p.telefono,
         l.tipo_lector,
-        l.estado,
+        ${estadoLectorSql('l')} AS estado,
+        l.estado AS estado_manual,
         l.creado_en
     FROM lectores l
     INNER JOIN personas p ON p.id = l.persona_id
@@ -195,12 +197,19 @@ export const toggleEstadoLector = async (id) => {
             ELSE 'ACTIVO'
         END
         WHERE id = $1
-        RETURNING *
+          AND (estado <> 'ACTIVO' OR ${estadoLectorSql('lectores')} = 'ACTIVO')
+        RETURNING *, ${estadoLectorSql('lectores')} AS estado, lectores.estado AS estado_manual
         `,
         [id]
     );
 
     if (result.rowCount === 0) {
+        const existente = await pool.query('SELECT id FROM lectores WHERE id = $1', [id]);
+        if (existente.rowCount) {
+            const error = new Error('El lector tiene una restricción activa; debe resolver el atraso o la sanción antes de habilitarlo');
+            error.status = 409;
+            throw error;
+        }
         const error = new Error('Lector no encontrado');
         error.status = 404;
         throw error;
@@ -229,7 +238,7 @@ export const getPerfilByUsuario = async (loginId) => {
             l.id AS lector_id,
             l.ru,
             l.tipo_lector,
-            l.estado AS estado_lector,
+            ${estadoLectorSql('l')} AS estado_lector,
             l.creado_en
         FROM login lo
         INNER JOIN personas p ON p.id = lo.persona_id

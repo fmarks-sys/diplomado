@@ -1,4 +1,5 @@
 import { pool } from '../../config/db.js';
+import { estadoLectorSql, sincronizarSanciones, MOTIVO_ATRASO } from './sanciones.js';
 
 const errorHttp = (status, message) => Object.assign(new Error(message), { status });
 // LISTAR TODOS LOS PRÉSTAMOS
@@ -61,9 +62,9 @@ export const getLectorById = async (id) => {
 
     const result = await pool.query(
         `
-        SELECT *
-        FROM lectores
-        WHERE id = $1
+        SELECT l.*, ${estadoLectorSql('l')} AS estado
+        FROM lectores l
+        WHERE l.id = $1
         `,
         [id]
     );
@@ -74,13 +75,22 @@ export const getLectorById = async (id) => {
 
 // ACTUALIZAR PRÉSTAMOS VENCIDOS
 export const updateVencidos = async () => {
-
-    await pool.query(`
-        UPDATE prestamos
-        SET estado = 'VENCIDO'
-        WHERE estado = 'PRESTADO'
-          AND fecha_devolucion_prevista < CURRENT_DATE
-    `);
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        // Mismo orden de bloqueo que las altas y devoluciones.
+        const lectores = await client.query(`SELECT l.id FROM lectores l WHERE
+            EXISTS (SELECT 1 FROM prestamos p WHERE p.lector_id = l.id
+                AND p.estado IN ('PRESTADO', 'VENCIDO') AND p.fecha_devolucion_prevista < CURRENT_DATE)
+            OR EXISTS (SELECT 1 FROM sanciones s WHERE s.lector_id = l.id
+                AND s.motivo = $1 AND s.estado = 'ACTIVA')
+            ORDER BY l.id FOR UPDATE`, [MOTIVO_ATRASO]);
+        for (const lector of lectores.rows) await sincronizarSanciones(client, lector.id);
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally { client.release(); }
 };
 
 
@@ -99,25 +109,30 @@ export const executeCreatePrestamoTx = async (
         await client.query('BEGIN');
 
 
-        // 1. Verificar que el lector no tenga actualmente
-        //    el mismo recurso prestado.
+        // Serializar altas por lector y volver a comprobar sus restricciones.
+        const lector = await client.query('SELECT * FROM lectores WHERE id = $1 FOR UPDATE', [lectorId]);
+        if (!lector.rowCount) throw errorHttp(404, 'Lector no existe');
+        const restricciones = await client.query(`SELECT id FROM sanciones
+            WHERE lector_id = $1 AND estado = 'ACTIVA' LIMIT 1`, [lectorId]);
+        if (lector.rows[0].estado !== 'ACTIVO' || restricciones.rowCount) {
+            throw errorHttp(409, 'El lector no está habilitado para préstamos');
+        }
         const prestamoActivo = await client.query(
             `
             SELECT id
             FROM prestamos
             WHERE lector_id = $1
-              AND recurso_id = $2
               AND estado IN ('PRESTADO', 'VENCIDO')
             LIMIT 1
             `,
-            [lectorId, recursoId]
+            [lectorId]
         );
 
 
         if (prestamoActivo.rows.length > 0) {
 
             throw errorHttp(409,
-                'El lector ya tiene un préstamo activo de este recurso'
+                'El lector ya tiene un préstamo activo o vencido'
             );
         }
 
@@ -202,6 +217,11 @@ export const executeDevolucionTx = async (prestamoId) => {
     try {
 
         await client.query('BEGIN');
+        const actual = await client.query('SELECT lector_id FROM prestamos WHERE id = $1', [prestamoId]);
+        if (!actual.rowCount) throw errorHttp(404, 'El préstamo no existe');
+        await client.query('SELECT id FROM lectores WHERE id = $1 FOR UPDATE', [actual.rows[0].lector_id]);
+        // Registrar el atraso incluso cuando la primera operación es devolverlo.
+        await sincronizarSanciones(client, actual.rows[0].lector_id);
 
 
         // 1. Marcar préstamo como DEVUELTO
@@ -256,6 +276,7 @@ export const executeDevolucionTx = async (prestamoId) => {
         }
 
 
+        await sincronizarSanciones(client, prestamo.lector_id);
         await client.query('COMMIT');
 
         return prestamo;

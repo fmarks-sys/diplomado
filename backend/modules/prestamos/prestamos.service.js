@@ -160,6 +160,8 @@ export const addPrestamo = async (data) => {
     }
 
 
+    await repo.updateVencidos();
+
     // 5. VALIDAR LECTOR
     const lector =
         await repo.getLectorById(

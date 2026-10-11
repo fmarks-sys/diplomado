@@ -69,6 +69,9 @@ const limpiar = async () => {
         const correos = identidades.map((p) => p.correo);
         const codigos = [variables.libro_codigo, variables.tesis_codigo, variables.borrable_codigo];
         const nombres = [variables.area_nombre, variables.area_nombre_editado];
+        await client.query(`DELETE FROM sanciones WHERE lector_id IN (
+            SELECT l.id FROM lectores l JOIN personas p ON p.id=l.persona_id
+            WHERE p.ci=ANY($1::varchar[]) AND p.correo=ANY($2::varchar[]))`, [cis, correos]);
         const prestamos = await client.query(`DELETE FROM prestamos WHERE
             recurso_id IN (SELECT id FROM recursos WHERE codigo_topografico = ANY($1::varchar[]))
             AND lector_id IN (SELECT l.id FROM lectores l JOIN personas p ON p.id = l.persona_id

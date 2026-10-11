@@ -6,6 +6,7 @@ import { createContext, SourceTextModule, SyntheticModule } from 'node:vm';
 const serviceSource = await readFile(new URL('../modules/prestamos/prestamos.service.js', import.meta.url), 'utf8');
 const controllerSource = await readFile(new URL('../modules/prestamos/prestamos.controller.js', import.meta.url), 'utf8');
 const repositorySource = await readFile(new URL('../modules/prestamos/prestamos.repository.js', import.meta.url), 'utf8');
+const sancionesSource = await readFile(new URL('../modules/prestamos/sanciones.js', import.meta.url), 'utf8');
 const datos = { lector_id: 1, recurso_id: 2, fecha_devolucion_prevista: '2999-12-31', tipo_prestamo: 'DOMICILIO' };
 const modulo = (context, exports) => new SyntheticModule(Object.keys(exports), function () {
     for (const [key, value] of Object.entries(exports)) this.setExport(key, value);
@@ -102,6 +103,8 @@ test('Repositorio Préstamos: conflictos y registros inexistentes revierten la t
             async query(sql) {
                 sql = sql.replace(/\s+/g, ' ').trim();
                 consultas.push(sql);
+                if (sql.startsWith('SELECT * FROM lectores')) return { rows: [{ estado: 'ACTIVO' }], rowCount: 1 };
+                if (sql.startsWith('SELECT lector_id FROM prestamos')) return { rows: escenario === 'prestamo-inexistente' ? [] : [{ lector_id: 1 }], rowCount: escenario === 'prestamo-inexistente' ? 0 : 1 };
                 if (sql.startsWith('SELECT id FROM prestamos') && sql.includes('lector_id')) return { rows: escenario === 'duplicado' ? [{ id: 1 }] : [] };
                 if (sql.startsWith('UPDATE recursos') || sql.startsWith('UPDATE prestamos')) return { rows: [] };
                 if (sql.startsWith('SELECT id FROM recursos')) return { rows: escenario === 'recurso-inexistente' ? [] : [{ id: 2 }] };
@@ -111,8 +114,10 @@ test('Repositorio Préstamos: conflictos y registros inexistentes revierten la t
             release() { consultas.push('RELEASE'); }
         };
         const db = modulo(context, { pool: { connect: async () => client } });
+        const sanciones = new SourceTextModule(sancionesSource, { context });
+        await sanciones.link(() => { throw new Error('Importación inesperada'); });
         const repo = new SourceTextModule(repositorySource, { context });
-        await repo.link(() => db);
+        await repo.link((specifier) => specifier.endsWith('sanciones.js') ? sanciones : db);
         await repo.evaluate();
         const run = escenario === 'devuelto' || escenario === 'prestamo-inexistente'
             ? repo.namespace.executeDevolucionTx(1)
