@@ -1,25 +1,26 @@
-# Sistema de Biblioteca
+﻿# Sistema de Biblioteca
 
-Proyecto para gestionar recursos bibliográficos, lectores, usuarios, áreas y préstamos, con autenticación mediante JWT. Incluye una API, una aplicación web y una aplicación Flutter.
+Sistema web y móvil para gestionar libros, tesis, lectores, usuarios, áreas y préstamos. Incluye autenticación JWT y roles Bibliotecario y Lector. La app Android está dirigida al Bibliotecario e incorpora escaneo bibliográfico asistido por IA.
 
-## Estructura y tecnologías
+## Componentes
 
-| Carpeta | Descripción | Tecnologías principales |
-| --- | --- | --- |
-| `backend/` | API REST | Node.js, Express 5, PostgreSQL, JWT y bcryptjs |
-| `biblioteca-inf/` | Aplicación web | React 19, Vite 8, Material UI y React Router |
-| `biblioteca_app/` | Aplicación Flutter | Flutter, Dart, http y shared_preferences |
+| Carpeta | Tecnologías |
+| --- | --- |
+| `backend/` | Node.js, Express, PostgreSQL, JWT y bcryptjs |
+| `biblioteca-inf/` | React, Vite y Material UI |
+| `biblioteca_app/` | Flutter y Dart |
 
-## Requisitos
+## Acceso público
 
-- Node.js compatible con las dependencias del proyecto y pnpm 11.8 o compatible.
-- PostgreSQL con la base de datos y las tablas del sistema configuradas.
-- Flutter con Dart compatible con `^3.12.2`.
-- Newman disponible en el entorno para las pruebas de API.
+- [Aplicación web](https://diplomado-bov.pages.dev/login)
+- [Salud de la API](https://diplomado-production-40c1.up.railway.app/api/v1/salud)
+- [Releases / APK](https://github.com/fmarks-sys/diplomado/releases)
 
-## Configuración
+## Requisitos y configuración
 
-Crear `backend/.env` con los datos de conexión y una clave JWT propia:
+Node.js compatible con el proyecto, pnpm 11.8 o compatible y PostgreSQL con el esquema del sistema cargado. Para Android, Flutter con Dart compatible con `^3.12.2`.
+
+Crear `backend/.env` y sustituir los valores de ejemplo por los del entorno local:
 
 ```dotenv
 PORT=3000
@@ -29,7 +30,7 @@ DB_PORT=5432
 DB_NAME=biblioteca
 DB_USER=tu_usuario
 DB_PASSWORD=tu_contrasena
-JWT_SECRET=tu_clave_secreta
+JWT_SECRET=tu_secreto_propio
 ```
 
 Crear `biblioteca-inf/.env`:
@@ -38,15 +39,13 @@ Crear `biblioteca-inf/.env`:
 VITE_API_URL=http://localhost:3000
 ```
 
-En Flutter, configurar la dirección del backend en `biblioteca_app/lib/config/api_config.dart`. Para un dispositivo físico, reemplazar `192.168.1.XX` por la IP del equipo que ejecuta el backend.
+Para habilitar el escaneo IA, configurar `GEMINI_API_KEY` únicamente en el backend. No publicar archivos `.env`, claves ni tokens.
 
-No publicar los archivos `.env` ni credenciales reales.
+## Ejecutar localmente
 
-## Instalación y ejecución
+Desde la raíz del proyecto, usar una terminal independiente para cada componente:
 
-Ejecutar cada componente en una terminal independiente, desde la raíz del proyecto.
-
-**Backend:**
+**Backend** — API en `http://localhost:3000`:
 
 ```bash
 cd backend
@@ -54,9 +53,7 @@ pnpm install
 pnpm dev
 ```
 
-La API inicia por defecto en `http://localhost:3000`. Para iniciarla sin nodemon, usar `pnpm start`.
-
-**Aplicación web:**
+**Web** — abrir la dirección indicada por Vite:
 
 ```bash
 cd biblioteca-inf
@@ -64,9 +61,7 @@ pnpm install
 pnpm dev
 ```
 
-Usar `pnpm build` para generar la compilación y `pnpm lint` para revisar el código.
-
-**Aplicación Flutter:**
+**Flutter** — usa Railway por defecto:
 
 ```bash
 cd biblioteca_app
@@ -74,15 +69,19 @@ flutter pub get
 flutter run
 ```
 
-## Pruebas automatizadas
+## Pruebas
 
-Desde la raíz, entrar a la carpeta del backend y ejecutar:
+Desde `backend/`, con API y PostgreSQL locales, `NODE_ENV=development` y Newman instalado:
 
 ```bash
-cd backend
 pnpm test:automated
 ```
 
-El comando ejecuta la colección Postman mediante Newman, muestra los resultados en la terminal y genera `backend/tests/reportes/resultado_pruebas.json`.
+Reporte: `backend/tests/reportes/resultado_pruebas.json`.
 
-Antes de ejecutar, configurar `url_backend` en el script `test:automated` de `backend/package.json` con la URL real de la API. Actualmente contiene `https://railway.app`.
+## Documentación
+
+- [Pruebas locales, producción y reportes](backend/tests/README.md)
+- [O4 en Postman: preparación y limpieza](backend/tests/POSTMAN-O4.md)
+- [Aplicación móvil y compilación del APK](biblioteca_app/README.md)
+- [Escaneo bibliográfico con IA](backend/docs/escaneo-ia.md)

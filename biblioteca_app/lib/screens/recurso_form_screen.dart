@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import '../services/recurso_photo_picker.dart';
 import '../services/recursos_service.dart';
 import '../theme/app_theme.dart';
 
 class RecursoFormScreen extends StatefulWidget {
-  const RecursoFormScreen({super.key, required this.service, this.recurso});
+  const RecursoFormScreen({
+    super.key,
+    required this.service,
+    this.recurso,
+    this.photoPicker,
+  });
   final RecursosService service;
   final Recurso? recurso;
+  final RecursoPhotoPicker? photoPicker;
   @override
   State<RecursoFormScreen> createState() => _RecursoFormScreenState();
 }
@@ -21,10 +30,15 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
   String? _areaError;
   String? _error;
   bool _saving = false;
+  bool _scanning = false;
+  String? _scanError;
+  late final RecursoPhotoPicker _photoPicker;
+  bool get _busy => _saving || _scanning;
 
   @override
   void initState() {
     super.initState();
+    _photoPicker = widget.photoPicker ?? RecursoPhotoPicker();
     final item = widget.recurso ?? {};
     _type = item['tipo_recurso'] ?? 'LIBRO';
     _support = item['soporte_fisico'] ?? 'EMPASTADO';
@@ -53,6 +67,215 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
       );
     }
     _loadAreas();
+    _recoverPhoto();
+  }
+
+  Future<void> _recoverPhoto() async {
+    try {
+      final photo = await _photoPicker.recover();
+      if (photo == null || !mounted || _busy) return;
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Fotografía recuperada'),
+          content: const Text(
+            'Se recuperó una foto de un escaneo interrumpido. ¿Quieres enviarla al escáner IA para revisar sus datos?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Descartar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Analizar'),
+            ),
+          ],
+        ),
+      );
+      if (accepted == true && mounted) await _scan(photo: photo);
+    } catch (_) {
+      // A recovery failure must never prevent manual registration.
+    }
+  }
+
+  Future<void> _choosePhoto() async {
+    if (_busy) return;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Escanear recurso con IA',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'La foto se enviará al servicio de IA. Usa una portada o página bibliográfica legible, sin datos personales sensibles.',
+                style: TextStyle(color: AppColors.muted, fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text('Tomar foto'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Elegir de galería'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (source != null && mounted) await _scan(source: source);
+  }
+
+  Future<void> _scan({ImageSource? source, XFile? photo}) async {
+    if (_busy) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _scanning = true;
+      _scanError = null;
+    });
+    try {
+      final file = photo ?? await _photoPicker.pick(source!);
+      if (file == null || !mounted) return;
+      if (await file.length() > RecursosService.maxImageBytes) {
+        throw Exception(
+          'La foto supera 3 MiB. Selecciona una imagen más pequeña.',
+        );
+      }
+      final data = await widget.service.scan(await file.readAsBytes());
+      if (!mounted) return;
+      final suggestions = <String, String>{
+        if (data['titulo'] != null &&
+            data['titulo'].toString().trim().isNotEmpty)
+          'titulo': data['titulo'],
+        if (data['autor'] != null && data['autor'].toString().trim().isNotEmpty)
+          (_type == 'TESIS' ? 'autor_postulante' : 'autor'): data['autor'],
+        if (data['anio_publicacion'] != null)
+          'anio_publicacion': data['anio_publicacion'].toString(),
+        if (_type == 'LIBRO' &&
+            data['isbn'] != null &&
+            data['isbn'].toString().trim().isNotEmpty)
+          'isbn': data['isbn'],
+      };
+      if (suggestions.isEmpty) {
+        throw Exception(
+          'No se detectaron datos legibles. Prueba otra fotografía o completa el formulario manualmente.',
+        );
+      }
+      const labels = {
+        'titulo': 'Título',
+        'autor': 'Autor',
+        'autor_postulante': 'Autor postulante',
+        'anio_publicacion': 'Año de publicación',
+        'isbn': 'ISBN',
+      };
+      final selected = suggestions.keys
+          .where((key) => _fields[key]!.text.trim().isEmpty)
+          .toSet();
+      final approved = await showDialog<Set<String>>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, update) => AlertDialog(
+            title: const Text('Revisar datos reconocidos'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'La IA puede equivocarse. Selecciona los campos que deseas aplicar y corrígelos en el formulario antes de guardar.',
+                      style: TextStyle(fontSize: 13, color: AppColors.muted),
+                    ),
+                    const SizedBox(height: 12),
+                    for (final entry in suggestions.entries)
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: Text(
+                          labels[entry.key]!,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${entry.value}${_fields[entry.key]!.text.trim().isEmpty ? '' : '\nActual: ${_fields[entry.key]!.text}\nSelecciona para reemplazarlo.'}',
+                        ),
+                        value: selected.contains(entry.key),
+                        onChanged: (value) => update(() {
+                          if (value == true) {
+                            selected.add(entry.key);
+                          } else {
+                            selected.remove(entry.key);
+                          }
+                        }),
+                      ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Los campos no reconocidos se conservan.',
+                      style: TextStyle(fontSize: 12, color: AppColors.muted),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: selected.isEmpty
+                    ? null
+                    : () => Navigator.pop(context, Set<String>.of(selected)),
+                child: const Text('Aplicar seleccionados'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (approved != null && mounted) {
+        setState(() {
+          for (final key in approved) {
+            _fields[key]!.text = suggestions[key]!;
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Datos aplicados. Revisa la ficha antes de guardar.'),
+          ),
+        );
+      }
+    } on PlatformException {
+      if (mounted) {
+        setState(
+          () => _scanError =
+              'No se pudo abrir la cámara o galería. Revisa los permisos de la app o elige otra opción.',
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _scanError = error.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
   }
 
   Future<void> _loadAreas() async {
@@ -89,7 +312,7 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
       .toList();
 
   Future<void> _save() async {
-    if (_saving || !_form.currentState!.validate()) return;
+    if (_busy || !_form.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     setState(() {
       _saving = true;
@@ -150,7 +373,7 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
       child: TextFormField(
         key: ValueKey(key),
         controller: _fields[key],
-        enabled: !_saving,
+        enabled: !_busy,
         decoration: InputDecoration(
           labelText: '$label${required ? ' *' : ''}',
           helperText: help,
@@ -232,7 +455,7 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
       });
     }
     return PopScope(
-      canPop: !_saving,
+      canPop: !_busy,
       child: Scaffold(
         appBar: AppBar(
           title: Text(
@@ -262,7 +485,7 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
                   width: double.infinity,
                   height: 48,
                   child: FilledButton.icon(
-                    onPressed: _saving ? null : _save,
+                    onPressed: _busy ? null : _save,
                     icon: _saving
                         ? const SizedBox(
                             width: 18,
@@ -308,10 +531,42 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
                     ),
                   ],
                   selected: {_type},
-                  onSelectionChanged: _saving
+                  onSelectionChanged: _busy
                       ? null
                       : (selection) => setState(() => _type = selection.first),
                 ),
+                const SizedBox(height: 20),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _choosePhoto,
+                  icon: _scanning
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.document_scanner_outlined),
+                  label: Text(
+                    _scanning
+                        ? 'Analizando fotografía...'
+                        : 'Escanear recurso con IA',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Autocompleta título, autor, año e ISBN. Revisa siempre los datos reconocidos.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                if (_scanError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      '$_scanError Puedes continuar con el registro manual.',
+                      style: const TextStyle(
+                        color: AppColors.penalty,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 _section(
                   'Datos generales',
@@ -351,7 +606,7 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
                             ),
                           ),
                       ],
-                      onChanged: _saving || _loadingAreas
+                      onChanged: _busy || _loadingAreas
                           ? null
                           : (value) => setState(() => _area = value),
                     ),
@@ -430,7 +685,7 @@ class _RecursoFormScreenState extends State<RecursoFormScreen> {
                           ])
                             DropdownMenuItem(value: value, child: Text(value)),
                         ],
-                        onChanged: _saving
+                        onChanged: _busy
                             ? null
                             : (value) => setState(() => _support = value!),
                       ),

@@ -17,6 +17,15 @@ detalles de registros y la cuenta Bibliotecario. Incluye acceso a gestión de
 recursos con búsqueda, filtros, páginas de 10 registros, detalles, creación,
 edición, cambio de estado y eliminación confirmada. Los formularios incluyen
 campos específicos de libros y tesis y áreas obtenidas de la API.
+El botón «Escanear recurso con IA» permite tomar una foto o elegirla de la
+galería. Envía la imagen (JPEG, PNG o WebP, hasta 3 MiB) al endpoint protegido
+POST /api/recursos/escanear de Railway. Presenta título, autor, año e ISBN
+reconocidos para revisarlos y seleccionar qué campos aplicar. Para tesis,
+el autor se aplica como postulante. Los campos existentes solo se reemplazan
+si se seleccionan expresamente; el recurso se guarda con el botón Guardar.
+Si el escaneo falla, el registro manual sigue disponible.
+GEMINI_API_KEY se configura únicamente en las variables del backend de Railway.
+Evitar fotografías con datos personales sensibles.
 La consulta de préstamos y lectores no incluye formularios de gestión.
 Las pantallas de historial, alertas y perfil de lector quedan fuera de las rutas.
 

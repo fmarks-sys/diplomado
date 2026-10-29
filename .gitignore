@@ -2,6 +2,7 @@
 .vscode/
 .DS_Store
 Thumbs.db
+/docs/
 
 # Variables de entorno
 .env

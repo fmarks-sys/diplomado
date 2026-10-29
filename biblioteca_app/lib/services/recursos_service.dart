@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import 'session_service.dart';
@@ -10,7 +11,12 @@ class RecursosService {
   RecursosService({this.client});
   final http.Client? client;
 
-  Future<dynamic> _request(String method, String path, [Recurso? data]) async {
+  Future<dynamic> _request(
+    String method,
+    String path, [
+    Recurso? data,
+    Duration timeout = const Duration(seconds: 20),
+  ]) async {
     final headers = await SessionService.headers();
     final connection = client ?? http.Client();
     try {
@@ -21,8 +27,8 @@ class RecursosService {
       request.headers.addAll({...headers, 'Content-Type': 'application/json'});
       if (data != null) request.body = jsonEncode(data);
       final response = await http.Response.fromStream(
-        await connection.send(request).timeout(const Duration(seconds: 20)),
-      ).timeout(const Duration(seconds: 20));
+        await connection.send(request).timeout(timeout),
+      ).timeout(timeout);
       dynamic body;
       if (response.body.isNotEmpty) {
         try {
@@ -74,5 +80,53 @@ class RecursosService {
 
   Future<void> delete(int id) async {
     await _request('DELETE', 'recursos/$id');
+  }
+
+  static const maxImageBytes = 3 * 1024 * 1024;
+
+  Future<Recurso> scan(Uint8List bytes) async {
+    if (bytes.length > maxImageBytes) {
+      throw Exception(
+        'La foto supera 3 MiB. Toma otra foto o selecciona una imagen más pequeña.',
+      );
+    }
+    String? mime;
+    if (bytes.length >= 4 &&
+        bytes[0] == 255 &&
+        bytes[1] == 216 &&
+        bytes[2] == 255) {
+      mime = 'image/jpeg';
+    } else if (bytes.length >= 24 &&
+        base64Encode(bytes.sublist(0, 8)) == 'iVBORw0KGgo=') {
+      mime = 'image/png';
+    } else if (bytes.length >= 12 &&
+        ascii.decode(bytes.sublist(0, 4), allowInvalid: true) == 'RIFF' &&
+        ascii.decode(bytes.sublist(8, 12), allowInvalid: true) == 'WEBP') {
+      mime = 'image/webp';
+    }
+    if (mime == null) {
+      throw Exception('Selecciona una imagen JPEG, PNG o WebP.');
+    }
+    final result = await _request('POST', 'recursos/escanear', {
+      'mime_type': mime,
+      'imagen_base64': base64Encode(bytes),
+    }, const Duration(seconds: 50));
+    if (result is! Map || result['data'] is! Map) {
+      throw Exception(
+        'El escáner devolvió una respuesta inválida. Puedes completar los datos manualmente.',
+      );
+    }
+    final data = <String, dynamic>{};
+    for (final key in ['titulo', 'autor', 'anio_publicacion', 'isbn']) {
+      final value = result['data'][key];
+      if (value != null &&
+          (key == 'anio_publicacion' ? value is! int : value is! String)) {
+        throw Exception(
+          'El escáner devolvió datos inválidos. Puedes completar los datos manualmente.',
+        );
+      }
+      data[key] = value;
+    }
+    return data;
   }
 }
