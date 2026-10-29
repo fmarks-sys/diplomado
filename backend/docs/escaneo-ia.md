@@ -5,7 +5,7 @@ Configurar en backend/.env (no compartir ni versionar la clave):
 ```dotenv
 GEMINI_API_KEY=tu_clave
 # Opcional:
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
 Iniciar desde backend con pnpm dev. No requiere migraciones ni guarda recursos,

@@ -66,7 +66,7 @@ export function validarExtraccion(value) {
 }
 
 export function crearEscaner({ fetchImpl = globalThis.fetch, timeoutMs = 25_000,
-    getConfig = () => ({ key: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite' }) } = {}) {
+    getConfig = () => ({ key: process.env.GEMINI_API_KEY?.trim(), model: process.env.GEMINI_MODEL?.trim() || 'gemini-3.5-flash-lite' }) } = {}) {
     return async (body) => {
         const image = validarImagen(body);
         const { key, model } = getConfig();
@@ -104,7 +104,8 @@ export function crearEscaner({ fetchImpl = globalThis.fetch, timeoutMs = 25_000,
             });
             if (!response.ok) {
                 if (response.status === 429) throw errorHttp(429, 'La cuota de IA está agotada. Intenta más tarde o usa el registro manual.');
-                if ([401, 403, 404].includes(response.status)) throw errorHttp(503, 'Revisa la configuración de Gemini en el servidor');
+                if (response.status === 404) throw errorHttp(503, 'El modelo Gemini no está disponible para este proyecto. Configura GEMINI_MODEL=gemini-3.5-flash-lite en Railway.');
+                if ([401, 403].includes(response.status)) throw errorHttp(503, 'Gemini rechazó la clave o sus permisos. Revisa GEMINI_API_KEY y sus restricciones en Railway.');
                 if (response.status === 400) throw errorHttp(422, 'Gemini no pudo procesar la imagen. Prueba otra fotografía.');
                 throw errorHttp(502, 'La IA no está disponible. Puedes continuar con el registro manual.');
             }

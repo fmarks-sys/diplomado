@@ -7,7 +7,7 @@ import { crearRouterEscaneo, crearLimiteEscaneo } from '../modules/recursos/esca
 
 const image = { mime_type: 'image/png',
     imagen_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF1kAAAAASUVORK5CYII=' };
-const config = () => ({ key: 'fake-key-only-for-tests', model: 'gemini-2.5-flash-lite' });
+const config = () => ({ key: 'fake-key-only-for-tests', model: 'gemini-3.5-flash-lite' });
 const extracted = { titulo: 'Ingeniería de software', autor: 'Autor de prueba', anio_publicacion: 2024, isbn: '978-0-306-40615-7' };
 const provider = (value = extracted, reason = 'STOP') => ({
     candidates: [{ finishReason: reason, content: { parts: [{ text: JSON.stringify(value) }] } }]
@@ -31,6 +31,32 @@ test('extractor sends image, JSON schema and key only in a header; returns revie
     assert.equal(result.data.isbn, '9780306406157');
     assert.equal(result.requiere_revision, true);
     assert.deepEqual(result.campos_no_detectados, []);
+});
+
+test('default model works for new projects and trims configuration', async (t) => {
+    const previousKey = process.env.GEMINI_API_KEY;
+    const previousModel = process.env.GEMINI_MODEL;
+    t.after(() => {
+        if (previousKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousKey;
+        if (previousModel === undefined) delete process.env.GEMINI_MODEL; else process.env.GEMINI_MODEL = previousModel;
+    });
+    process.env.GEMINI_API_KEY = ' fake-key-only-for-tests ';
+    delete process.env.GEMINI_MODEL;
+    const scan = crearEscaner({ fetchImpl: async (url, request) => {
+        assert.equal(url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent');
+        assert.equal(request.headers['x-goog-api-key'], 'fake-key-only-for-tests');
+        return new Response(JSON.stringify(provider()));
+    } });
+    await scan(image);
+    process.env.GEMINI_MODEL = ' gemini-3.5-flash-lite ';
+    await scan(image);
+});
+
+test('model rejection and credential rejection have distinct safe guidance', async () => {
+    for (const [upstream, expected] of [[404, 'GEMINI_MODEL'], [401, 'GEMINI_API_KEY'], [403, 'GEMINI_API_KEY']]) {
+        await assert.rejects(crearEscaner({ getConfig: config, fetchImpl: mock({ error: 'private-key-and-details' }, upstream) })(image),
+            error => error.status === 503 && error.message.includes(expected) && !error.message.includes('private-key'));
+    }
 });
 
 test('missing/unreadable fields remain null; invalid ISBN and future year are discarded', async () => {

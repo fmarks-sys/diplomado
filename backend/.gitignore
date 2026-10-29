@@ -21,3 +21,9 @@ build/
 .vscode/
 .idea/
 *.suo
+
+#
+docs/
+
+# Entornos O4 generados: contienen tokens y el manifiesto de limpieza.
+tests/.privado-o4/

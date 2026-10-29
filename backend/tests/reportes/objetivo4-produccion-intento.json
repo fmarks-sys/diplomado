@@ -1,0 +1,14 @@
+{
+  "ejecucion_utc": "2026-10-28T15:21:00.408Z",
+  "entorno": "Producción Railway",
+  "api": "https://diplomado-production-40c1.up.railway.app",
+  "estado": "No ejecutado",
+  "preflight": {
+    "login_bibliotecario_http": 200,
+    "perfil_http": 200,
+    "identidad_base_verificada": false
+  },
+  "motivo": "PostgreSQL rechazó la autenticación (28P01). No se prepararon fixtures ni se ejecutaron casos O4.",
+  "casos": [],
+  "registros_ficticios_creados": 0
+}

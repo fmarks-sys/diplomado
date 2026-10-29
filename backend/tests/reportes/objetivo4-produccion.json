@@ -1,0 +1,300 @@
+{
+  "ejecucion_utc": "2026-10-28T15:27:46.213Z",
+  "entorno": "Producción Railway",
+  "api": "https://diplomado-production-40c1.up.railway.app",
+  "preflight": {
+    "identidad_base_verificada": true
+  },
+  "herramienta": "Node.js, HTTP y PostgreSQL",
+  "alcance": "CA05.4 y CA05.5; fixtures ficticios, concurrencia y preservación de restricciones manuales",
+  "resumen": {
+    "casos": 14,
+    "aprobados": 14,
+    "fallidos": 0
+  },
+  "casos": [
+    {
+      "id": "O4-01",
+      "escenario": "Primer préstamo permitido",
+      "ruta": "POST /api/prestamos",
+      "esperado": "201",
+      "obtenido": "201 Created",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-02",
+      "escenario": "Segundo recurso rechazado sin descontar stock",
+      "ruta": "POST /api/prestamos",
+      "esperado": "409 y stock sin cambios",
+      "obtenido": "409 Conflict; stock conservado",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-03",
+      "escenario": "Dos altas simultáneas para el mismo lector",
+      "ruta": "POST /api/prestamos (concurrente)",
+      "esperado": "Una 201 y otra 409",
+      "obtenido": "201 + 409; un único préstamo pendiente",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-04",
+      "escenario": "Atraso registrado automáticamente",
+      "ruta": "GET /api/prestamos/mis-prestamos",
+      "esperado": "200, VENCIDO y sanción ACTIVA",
+      "obtenido": "200; VENCIDO; sanción ACTIVA; lector SANCIONADO",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-05",
+      "escenario": "Revisión repetida no duplica sanciones",
+      "ruta": "GET /api/prestamos/mis-prestamos",
+      "esperado": "200 y una sanción",
+      "obtenido": "200; una sanción",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-06",
+      "escenario": "Préstamo vencido impide otro recurso",
+      "ruta": "POST /api/prestamos",
+      "esperado": "409",
+      "obtenido": "409 Conflict",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-14",
+      "escenario": "Cambio manual no elude ni sustituye la sanción por atraso",
+      "ruta": "PATCH /api/lectores/estado/:id",
+      "esperado": "409 y estado manual conservado",
+      "obtenido": "409; atraso vigente y estado manual conservado",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-07",
+      "escenario": "Devolución levanta únicamente el atraso",
+      "ruta": "PATCH /api/prestamos/devolver/:id",
+      "esperado": "200, CUMPLIDA y lector ACTIVO",
+      "obtenido": "200; sanción CUMPLIDA; lector ACTIVO",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-08",
+      "escenario": "Lector habilitado puede volver a prestar",
+      "ruta": "POST /api/prestamos",
+      "esperado": "201",
+      "obtenido": "201 Created",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-09",
+      "escenario": "Devolución conserva INACTIVO manual",
+      "ruta": "PATCH /api/prestamos/devolver/:id",
+      "esperado": "200 y lector INACTIVO",
+      "obtenido": "200; INACTIVO conservado",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-10",
+      "escenario": "Devolución conserva SANCIONADO manual",
+      "ruta": "PATCH /api/prestamos/devolver/:id",
+      "esperado": "200 y lector SANCIONADO",
+      "obtenido": "200; SANCIONADO manual conservado",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-11",
+      "escenario": "Devolución conserva otra sanción activa",
+      "ruta": "PATCH /api/prestamos/devolver/:id",
+      "esperado": "200 y otra sanción ACTIVA",
+      "obtenido": "200; restricción manual ACTIVA conservada",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-12",
+      "escenario": "Datos históricos con varios atrasos mantienen restricción",
+      "ruta": "PATCH /api/prestamos/devolver/:id",
+      "esperado": "200 y restricción mientras quede otro atraso",
+      "obtenido": "200; restricción hasta devolver ambos",
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-13",
+      "escenario": "Fecha de hoy no constituye atraso",
+      "ruta": "GET /api/prestamos/mis-prestamos",
+      "esperado": "200 y ninguna sanción por vencer hoy",
+      "obtenido": "200; sin sanción por fecha de hoy",
+      "estado": "Aprobado"
+    }
+  ],
+  "observaciones_http": [
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 201
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 409
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 201
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 409
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 409
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/lectores/estado/15",
+      "http": 409
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/prestamos/devolver/12",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 201
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/prestamos/devolver/14",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 201
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/prestamos/devolver/15",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 201
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/prestamos/devolver/16",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/prestamos/devolver/17",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/prestamos/devolver/18",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/prestamos",
+      "http": 201
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/prestamos/mis-prestamos",
+      "http": 200
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/lectores",
+      "http": 200
+    }
+  ],
+  "limpieza": {
+    "completada": true,
+    "registros_temporales_restantes": 0
+  }
+}

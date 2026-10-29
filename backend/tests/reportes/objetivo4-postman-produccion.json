@@ -1,0 +1,462 @@
+{
+  "ejecucion_utc": "2026-10-28T18:49:31.580Z",
+  "entorno": "Producción Railway",
+  "herramienta": "Newman",
+  "resumen": {
+    "casos": 14,
+    "aprobados": 14,
+    "fallos_newman": 0
+  },
+  "casos": [
+    {
+      "id": "O4-01",
+      "escenario": "O4-01 Primer préstamo permitido",
+      "http_observados": [
+        201
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Préstamo creado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-02",
+      "escenario": "O4-02 Segundo recurso rechazado sin descontar stock",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/recursos/30",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Stock conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-03",
+      "escenario": "O4-03 Dos altas simultáneas para el mismo lector",
+      "http_observados": [
+        200,
+        200,
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Concurrencia: una 201 y otra 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/prestamos",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Un único préstamo pendiente",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-04",
+      "escenario": "O4-04 Atraso registrado automáticamente",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Préstamo vencido",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo SANCIONADO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-05",
+      "escenario": "O4-05 Revisión repetida no duplica sanciones",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Préstamo sigue vencido",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo SANCIONADO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-06",
+      "escenario": "O4-06 Préstamo vencido impide otro recurso",
+      "http_observados": [
+        409
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-14",
+      "escenario": "O4-14 Cambio manual no elude ni sustituye sanción por atraso",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 409",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Error informado",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo SANCIONADO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-07",
+      "escenario": "O4-07 Devolución levanta únicamente el atraso",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Préstamo devuelto",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo ACTIVO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-08",
+      "escenario": "O4-08 Lector habilitado puede volver a prestar",
+      "http_observados": [
+        201
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 201",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-09",
+      "escenario": "O4-09 Devolución conserva INACTIVO manual",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo INACTIVO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual INACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-10",
+      "escenario": "O4-10 Devolución conserva SANCIONADO manual",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo SANCIONADO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual SANCIONADO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-11",
+      "escenario": "O4-11 Devolución conserva otra sanción activa",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo SANCIONADO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-12",
+      "escenario": "O4-12 Datos históricos con varios atrasos mantienen restricción",
+      "http_observados": [
+        200,
+        200,
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo SANCIONADO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Segunda devolución HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Habilitado al devolver ambos",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    },
+    {
+      "id": "O4-13",
+      "escenario": "O4-13 Fecha de hoy no constituye atraso",
+      "http_observados": [
+        200,
+        200
+      ],
+      "pruebas": [
+        {
+          "nombre": "HTTP 200",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Respuesta JSON",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Vence hoy sin estar vencido",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Consulta auxiliar /api/lectores",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado efectivo ACTIVO",
+          "estado": "Aprobado"
+        },
+        {
+          "nombre": "Estado manual ACTIVO conservado",
+          "estado": "Aprobado"
+        }
+      ],
+      "error_red": false,
+      "estado": "Aprobado"
+    }
+  ],
+  "errores": []
+}

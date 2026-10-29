@@ -1,0 +1,95 @@
+{
+  "ejecucion_utc": "2026-10-28T18:49:34.980Z",
+  "entorno": "Producción Railway",
+  "comprobaciones_sql": [
+    {
+      "nombre": "Sanción automática única: atraso",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: atraso",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción automática única: devolucion",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: devolucion",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción automática única: inactivo",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: inactivo",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción automática única: manual",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: manual",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción automática única: otra",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: otra",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción automática única: historico_1",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: historico_1",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción automática única: historico_2",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado de sanción: historico_2",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sanción manual continúa activa",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Sin sanción por vencer hoy",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Un único préstamo concurrente",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado manual conservado: atraso",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado manual conservado: inactivo",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado manual conservado: manual",
+      "estado": "Aprobado"
+    },
+    {
+      "nombre": "Estado manual conservado: otra",
+      "estado": "Aprobado"
+    }
+  ],
+  "limpieza": {
+    "completada": true,
+    "registros_temporales_restantes": 0
+  },
+  "nota": "Complemento SQL. El resultado de las aserciones HTTP debe consultarse en Postman o en el reporte Newman de esta ejecución."
+}
